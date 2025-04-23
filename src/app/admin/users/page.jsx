@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function AdminUsersPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
@@ -16,6 +18,14 @@ export default function AdminUsersPage() {
 
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session.user.role !== 'admin') {
+      router.push('/');
+    }
+  }, [session, status, router]);
+
+  if (status === 'loading') return <p>Loading...</p>;
 
   const promoteUser = async (email) => {
     const res = await fetch('/api/users/promote', {

@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
   const { data: session } = useSession();
+  const role = session?.user?.role;
 
   return (
     <nav className="flex justify-between items-center p-4 bg-gray-100 shadow">
@@ -14,9 +15,10 @@ export default function Navbar() {
 
       <div className="flex gap-4 items-center">
         <Link href="/">Home</Link>
-        <Link href="/users">Users</Link>
+        <Link href="/users">Users</Link>        
         <Link href="/events">Events</Link>
-
+        {(role === 'admin' || role === 'staff') && <Link href="/events/create">Create Event</Link>}
+        {role === 'admin' && <Link href="/admin/users">Manage Users</Link>}
         {session?.user?.role === 'staff' && (
           <Link href="/admin/users" className="px-4 py-2">Admin</Link>
         )}

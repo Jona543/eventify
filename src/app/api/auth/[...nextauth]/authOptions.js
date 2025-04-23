@@ -2,7 +2,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '@/lib/mongodb';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -45,7 +45,7 @@ export const authOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user?.role) token.role = user.role;
       return token;
     },
     async session({ session, token }) {
