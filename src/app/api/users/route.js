@@ -27,6 +27,7 @@ export async function POST(request) {
       email,
       passwordHash: hashedPassword,
       createdAt: new Date(),
+      role: 'customer'
     });
 
     return Response.json({ success: true, message: 'User created' });

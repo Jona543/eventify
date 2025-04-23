@@ -1,38 +1,44 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
-export default function SignInPage() {
+export default function SignUpPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
-    const result = await signIn('credentials', {
-      redirect: false,
-      email,
-      password,
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    if (result.ok) {
-      router.push('/');
+    const data = await res.json();
+    if (data.success) {
+      alert('Account created. You can now sign in.');
+      router.push('/signin');
     } else {
-      alert('Login failed');
+      alert(data.error || 'Registration failed');
     }
-  };
-
-  const handleGoogleSignIn = () => {
-    signIn('google'); // Automatically redirects to Google's sign-in
   };
 
   return (
     <main className="p-6 max-w-sm mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Sign In</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+      <h1 className="text-2xl font-bold mb-4">Create Account</h1>
+      <form onSubmit={handleRegister} className="space-y-4 mb-6">
+        <input
+          type="text"
+          placeholder="Name"
+          className="w-full p-2 border"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         <input
           type="email"
           placeholder="Email"
@@ -48,22 +54,23 @@ export default function SignInPage() {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
-          Sign In
+          Create Account
         </button>
       </form>
 
       <div className="text-center mb-4">or</div>
 
       <button
-        onClick={handleGoogleSignIn}
+        onClick={() => signIn('google')}
         className="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 transition"
       >
-        Sign in with Google
+        Sign up with Google
       </button>
+
       <p className="text-center text-sm mt-4">
-        New here?{' '}
-        <a href="/signup" className="text-blue-600 underline">
-          Create an account
+        Already have an account?{' '}
+        <a href="/signin" className="text-blue-600 underline">
+          Sign in
         </a>
       </p>
     </main>
