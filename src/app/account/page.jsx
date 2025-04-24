@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import UserEventList from '@/app/components/UserEventList';
 
 export default function AccountPage() {
   const { data: session, status } = useSession();
@@ -50,6 +51,7 @@ export default function AccountPage() {
   }
 
   return (
+    <>
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
       <h1 className="text-xl font-semibold mb-4">Account Settings</h1>
       <p className="mb-4">Logged in as: <strong>{session.user.email}</strong></p>
@@ -97,5 +99,7 @@ export default function AccountPage() {
 
       {message && <p className="mt-4 text-sm text-gray-700">{message}</p>}
     </div>
+    <UserEventList />
+    </>
   );
 }

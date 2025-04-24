@@ -1,70 +1,90 @@
 'use client';
+
 import { useEffect, useState } from 'react';
+import EventCard from '@/app/components/EventCard'; // ⬅️ import the new component
+import { useSession } from 'next-auth/react';
 
 export default function EventsList() {
   const [events, setEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
-  const [selectedTopic, setSelectedTopic] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const res = await fetch('/api/events');
-      const data = await res.json();
-      setEvents(data.events || []);
-      setFilteredEvents(data.events || []);
+      try {
+        const res = await fetch('/api/events');
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setEvents(data);
+        } else if (Array.isArray(data.events)) {
+          setEvents(data.events);
+        } else {
+          console.error('Unexpected data format:', data);
+          setEvents([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchEvents();
   }, []);
 
-  const handleTopicChange = (e) => {
-    const topic = e.target.value;
-    setSelectedTopic(topic);
+  const handleRegister = async (eventId) => {
+    const res = await fetch('/api/events/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId }),
+    });
 
-    if (topic === 'All') {
-      setFilteredEvents(events);
-    } else {
-      setFilteredEvents(events.filter(event => event.topic === topic));
+    if (res.ok) {
+      const updated = await fetch('/api/events');
+      const data = await updated.json();
+
+      if (Array.isArray(data)) {
+        setEvents(data);
+      } else if (Array.isArray(data.events)) {
+        setEvents(data.events);
+      } else {
+        console.error('Unexpected data format after register:', data);
+      }
     }
   };
 
+  const handleUnregister = async (eventId) => {
+    const res = await fetch('/api/events/unregister', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId }),
+    });
+  
+    if (res.ok) {
+      const updated = await fetch('/api/users/events');
+      setEvents(await updated.json());
+    }
+  };
+  
+
+  if (loading) return <p>Loading events...</p>;
+
   return (
-    <div>
-      {/* Topic Filter Dropdown */}
-      <div className="mb-4">
-        <label htmlFor="topicFilter" className="mr-2 font-medium">Filter by Topic:</label>
-        <select
-          id="topicFilter"
-          value={selectedTopic}
-          onChange={handleTopicChange}
-          className="p-2 border rounded"
-        >
-          <option value="All">All</option>
-          <option value="Tech">Tech</option>
-          <option value="Sport">Sport</option>
-          <option value="Business">Business</option>
-          <option value="Health">Health</option>
-        </select>
-      </div>
-
-      {/* Event List */}
-      <ul className="space-y-2">
-        {filteredEvents.map((event) => {
-          const formattedDate = new Date(event.date).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          });
-
-          return (
-            <li key={event._id} className="border p-3 rounded shadow">
-              <h2 className="text-xl font-semibold">{event.title}</h2>
-              <p>{event.description}</p>
-              <p className="text-sm text-gray-500">{formattedDate}</p>
-              <p className="text-sm text-blue-600 font-medium">Topic: {event.topic}</p>
-            </li>
-          );
-        })}
+    <div className="mt-8 max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">Upcoming Events</h2>
+      <ul className="space-y-4">
+        {events.map((event) => (
+          <li key={event._id}>
+            <EventCard 
+              event={event}
+              onRegister={handleRegister} 
+              userEmail={session?.user?.email}
+              onUnregister={handleUnregister}
+            />
+          </li>
+        ))}
       </ul>
     </div>
   );
