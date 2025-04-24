@@ -6,28 +6,39 @@ export default function CreateEvent({ onCreated }) {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [topic, setTopic] = useState('')
+  const [location, setLocation] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, date }),
+      body: JSON.stringify({ title, description, date, location, topic }),
     });
-
+  
     if (res.ok) {
       setTitle('');
       setDescription('');
       setDate('');
+      setLocation('');
       setTopic('');
+      setSuccessMessage('✅ Event created successfully!');
       if (onCreated) onCreated();
     } else {
-      alert('Failed to create event');
+      const errorData = await res.json().catch(() => ({}));
+      console.error('Create event error:', errorData);
+      alert(`❌ Failed to create event: ${errorData.error || 'Unknown error'}`);
     }
   };
+  
 
   return (
     <form onSubmit={handleSubmit} className="mb-6 space-y-3">
+      {successMessage && (
+        <p className="text-green-600 font-semibold">{successMessage}</p>
+      )}
       <input
         type="text"
         placeholder="Title"
@@ -42,7 +53,14 @@ export default function CreateEvent({ onCreated }) {
         onChange={(e) => setDescription(e.target.value)}
       />
       <input
-        type="date"
+        type="text"
+        placeholder="Location"
+        className="w-full p-2 border"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+      />
+      <input
+        type="datetime-local"
         className="w-full p-2 border"
         value={date}
         onChange={(e) => setDate(e.target.value)}

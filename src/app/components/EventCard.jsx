@@ -2,9 +2,23 @@
 
 import React from 'react';
 
-export default function EventCard({ event, onRegister, onUnregister, userEmail, provider }) {
+export default function EventCard({ event, onRegister, onUnregister, userEmail, provider, userRole, }) {
 
   const isAttending = event.attendees?.includes(userEmail);
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+
+    const res = await fetch(`/api/events?id=${event._id}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      alert('Event deleted');
+      window.location.reload(); // quick refresh — you could also use state to update
+    } else {
+      alert('Failed to delete event');
+    }
+  }
 
   const handleAddToGoogleCalendar = async () => {
     try {
@@ -47,7 +61,11 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
       <h2 className="text-lg font-semibold mb-2">{event.title}</h2>
       <p className="text-sm text-gray-600 mb-2">{event.description}</p>
       <p className="text-sm text-gray-500 mb-2">
-        Date: {new Date(event.date).toLocaleDateString()}
+        Date: {new Date(event.date).toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+      }
       </p>
 
       {userEmail && !isAttending && (
@@ -79,6 +97,15 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
           Sign in with Google to add this event to your calendar.
         </p>
       )}
+
+      {userRole === 'staff' ? (
+        <button
+          onClick={handleDelete}
+          className="bg-gray-700 hover:bg-gray-800 text-white py-1 px-3 rounded mt-2"
+        >
+          Delete Event
+        </button>
+      ) : null}
     </div>
   );
 }

@@ -1,12 +1,16 @@
 // app/api/events/route.js
 import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
+
 
 export async function POST(request) {
   try {
     const body = await request.json();
     const { title, description, date, location, topic } = body;
 
-    if (!title || !date || !location || !topic) {
+    if (!title || !description || !date || !location || !topic) {
       return Response.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -17,7 +21,7 @@ export async function POST(request) {
     await events.insertOne({
       title,
       description: description || '',
-      date,
+      date: new Date(date),
       location,
       topic,
       createdAt: new Date(),
@@ -43,12 +47,48 @@ export async function GET(request) {
     // Build query conditionally
     const query = topic ? { topic } : {};
 
-    const events = await eventsCollection.find(query).toArray();
+    const events = await eventsCollection
+  .find(query)
+  .sort({ date: 1 }) // Sorts events by date ascending
+  .toArray();
+
 
     return Response.json({ success: true, events });
   } catch (error) {
     console.error('Error fetching events:', error);
     return Response.json({ success: false, error: 'Failed to fetch events' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== 'staff') {
+    return Response.json({ success: false, error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return Response.json({ success: false, error: 'Missing event ID' }, { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db();
+    const events = db.collection('events');
+
+    const result = await events.deleteOne({ _id: new ObjectId(id) });
+
+    if (result.deletedCount === 0) {
+      return Response.json({ success: false, error: 'Event not found' }, { status: 404 });
+    }
+
+    return Response.json({ success: true, message: 'Event deleted' });
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    return Response.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
