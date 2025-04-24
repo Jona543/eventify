@@ -11,7 +11,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await fetch('/api/users'); // Assuming you have this route
+      const res = await fetch('/api/users');
       const data = await res.json();
       setUsers(data.users);
     };
@@ -20,7 +20,7 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => {
-    if (status === 'authenticated' && session.user.role !== 'admin') {
+    if (status === 'authenticated' && session.user.role !== 'staff') {
       router.push('/');
     }
   }, [session, status, router]);

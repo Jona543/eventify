@@ -44,7 +44,6 @@ export async function GET() {
         const users = db.collection('users');
     
         const allUsers = await users.find({}, { projection: { passwordHash: 0 } }).toArray();
-        console.log('Retrieved users:', allUsers);
     
         return Response.json({ success: true, users: allUsers });
       } catch (error) {

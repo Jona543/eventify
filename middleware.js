@@ -9,15 +9,15 @@ export async function middleware(req) {
   console.log('🔗 Path:', path);
 
   const isProtectedEventRoute = path === '/events/create';
-  const isAdminRoute = path.startsWith('/admin');
+  const isAdminRoute = path.startsWith('/staff');
 
   if (isProtectedEventRoute) {
-    if (!token || (token.role !== 'admin' && token.role !== 'staff')) {
+    if (!token || token.role !== 'staff') {
       return NextResponse.redirect(new URL('/', req.url));
     }
   }
 
-  if (isAdminRoute && token?.role !== 'admin') {
+  if (isAdminRoute && token?.role !== 'staff') {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
@@ -32,5 +32,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/events/create', '/debug-token'],
+  matcher: ['/staff/:path*', '/events/create', '/debug-token'],
 };

@@ -11,7 +11,7 @@ export default function CreateEventPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'authenticated' && !['admin', 'staff'].includes(session.user.role)) {
+    if (status === 'authenticated' && !['staff'].includes(session.user.role)) {
       router.push('/');
     }
   }, [session, status, router]);

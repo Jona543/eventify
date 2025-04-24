@@ -14,21 +14,16 @@ export default function Navbar() {
       </div>
 
       <div className="flex gap-4 items-center">
-        <Link href="/">Home</Link>
-        <Link href="/users">Users</Link>        
-        <Link href="/events">Events</Link>
-        {(role === 'admin' || role === 'staff') && <Link href="/events/create">Create Event</Link>}
-        {role === 'admin' && <Link href="/admin/users">Manage Users</Link>}
-        {session?.user?.role === 'staff' && (
-          <Link href="/admin/users" className="px-4 py-2">Admin</Link>
-        )}
-
-
+        <Link href="/">Home</Link>      
+        {role === 'staff' && <Link href="/events/create">Create Event</Link>}
+        {role === 'staff' && <Link href="/staff/users">Manage Users</Link>}
+        
         {session?.user ? (
           <>
             <span className="text-sm text-gray-600">
               {session.user.name || session.user.email}
             </span>
+            <Link href="/account">Account</Link>
             <button
               onClick={() => signOut({ callbackUrl: '/signin' })}
               className="bg-red-500 text-white px-3 py-1 rounded"
@@ -39,7 +34,7 @@ export default function Navbar() {
         ) : (
           <>
             <Link href="/signin" className="text-blue-600">Sign In</Link>
-            <Link href="/signup" className="text-blue-600">Sign Up</Link>
+            <Link href="/signup" className="text-blue-600">Create Account</Link>
           </>
         )}
       </div>

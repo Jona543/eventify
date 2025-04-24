@@ -6,7 +6,7 @@ export async function POST(req) {
   const session = await getServerSession(authOptions);
 
   // Check if requester is authenticated and an admin
-  if (!session || session.user.role !== 'admin') {
+  if (!session || session.user.role !== 'staff') {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 });
   }
 

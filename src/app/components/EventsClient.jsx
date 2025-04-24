@@ -2,7 +2,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation'
 import EventsList from './EventsList';
-import CreateEvent from './CreateEvent';
 
 export default function EventsClient() {
   const { data: session, status } = useSession();
