@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import EventCard from '@/app/components/EventCard'; // ⬅️ import the new component
+import EventCard from '@/app/components/EventCard';
 import { useSession } from 'next-auth/react';
 
 export default function EventsList() {
@@ -71,6 +71,9 @@ export default function EventsList() {
 
   if (loading) return <p>Loading events...</p>;
 
+  console.log(session?.provider, "provider")
+  console.log(session, 'session')
+  
   return (
     <div className="mt-8 max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Upcoming Events</h2>
@@ -82,6 +85,7 @@ export default function EventsList() {
               onRegister={handleRegister} 
               userEmail={session?.user?.email}
               onUnregister={handleUnregister}
+              provider={session?.provider}
             />
           </li>
         ))}

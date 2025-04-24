@@ -35,6 +35,13 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: 'openid email profile https://www.googleapis.com/auth/calendar.events',
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
     }),
   ],
   pages: {
@@ -44,20 +51,31 @@ export const authOptions = {
     strategy: 'jwt',
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user?.role) {
-        token.sub = user.id
+    async jwt({ token, user, account }) {
+      // On initial sign-in
+      if (account) {
+        token.accessToken = account.access_token;
+        token.provider = account.provider;
+      }
+  
+      // Attach custom fields from DB (e.g., role)
+      if (user) {
+        token.sub = user.id;
         token.role = user.role;
       }
+  
       return token;
     },
+  
     async session({ session, token }) {
-      if (token?.role) {
-        session.user.sub = token.sub
-        session.user.role = token.role;
-      }
+      // Attach custom fields to session
+      session.accessToken = token.accessToken ?? null;
+      session.provider = token.provider ?? null;
+      session.user.sub = token.sub ?? null;
+      session.user.role = token.role ?? null;
+  
       return session;
-    },
+    }
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

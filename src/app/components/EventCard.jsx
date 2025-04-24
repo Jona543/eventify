@@ -2,8 +2,45 @@
 
 import React from 'react';
 
-export default function EventCard({ event, onRegister, onUnregister, userEmail }) {
+export default function EventCard({ event, onRegister, onUnregister, userEmail, provider }) {
+
   const isAttending = event.attendees?.includes(userEmail);
+
+  const handleAddToGoogleCalendar = async () => {
+    try {
+      const res = await fetch('/api/google/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: event.title,
+          description: event.description,
+          start: new Date(event.date).toISOString(),
+          end: new Date(new Date(event.date).getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
+        }),
+      });
+  
+      let data = null;
+  
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      }
+  
+      if (res.ok) {
+        alert('✅ Event added to your Google Calendar!');
+      } else {
+        console.error('Google Calendar error:', data);
+        alert(
+          `❌ Failed to add event: ${data?.error || 'Unknown error'}\n\nDetails:\n${data?.detail || 'No additional info'}`
+        );
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      alert('❌ An unexpected error occurred while adding the event.');
+    }
+  };
+  
+  
 
   return (
     <div className="border rounded p-4 mb-4 shadow">
@@ -28,7 +65,19 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail }
           className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
         >
           Unregister
-        </button>
+        </button>        
+      )}
+      {provider === 'google' ? (
+      <button
+        onClick={handleAddToGoogleCalendar}
+        className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded"
+      >
+        Add to Google Calendar
+      </button>
+      ) : (
+        <p className="text-sm text-gray-600">
+          Sign in with Google to add this event to your calendar.
+        </p>
       )}
     </div>
   );

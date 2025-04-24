@@ -61,9 +61,10 @@ export default function UserEventList() {
           <li key={event._id}>
             <EventCard
               event={event}
-              userEmail={session.user.email}
+              userEmail={session?.user?.email}
               onRegister={handleRegister}
               onUnregister={handleUnregister}
+              provider={session?.provider}
             />
           </li>
         ))}
