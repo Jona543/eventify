@@ -5,33 +5,56 @@ export default function CreateEvent({ onCreated }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
-  const [topic, setTopic] = useState('')
+  const [endDate, setEndDate] = useState('');
+  const [topic, setTopic] = useState('');
   const [location, setLocation] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const startDate = new Date(date);
+    const endDateObj = new Date(endDate);
+
+    if (endDate && endDateObj < startDate) {
+    alert('End date cannot be before start date.');
+    return;
+    }
   
     const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, date, location, topic }),
+      body: JSON.stringify({ title, description, date, endDate, location, topic }),
     });
   
     if (res.ok) {
       setTitle('');
       setDescription('');
       setDate('');
+      setEndDate('');
       setLocation('');
       setTopic('');
       setSuccessMessage('✅ Event created successfully!');
       if (onCreated) onCreated();
     } else {
-      const errorData = await res.json().catch(() => ({}));
+      let errorData = {};
+      try {
+        errorData = await res.json();
+      } catch (err) {
+        errorData = { error: 'Unknown error (no JSON response)' };
+      }
+    
       console.error('Create event error:', errorData);
       alert(`❌ Failed to create event: ${errorData.error || 'Unknown error'}`);
     }
+    
   };
+
+  function toLocalDateTimeInputValue(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+  
   
 
   return (
@@ -63,7 +86,27 @@ export default function CreateEvent({ onCreated }) {
         type="datetime-local"
         className="w-full p-2 border"
         value={date}
-        onChange={(e) => setDate(e.target.value)}
+        onChange={(e) => {
+          const newStart = e.target.value;
+          setDate(newStart);
+        
+          const newStartDate = new Date(newStart);
+          const currentEndDate = new Date(endDate);
+        
+          if (!endDate || currentEndDate < newStartDate) {
+            const oneHourLater = new Date(newStartDate.getTime() + 60 * 60 * 1000);
+            setEndDate(toLocalDateTimeInputValue(oneHourLater));
+          }
+        }}
+        
+        
+      />
+      <input
+        type="datetime-local"
+        className="w-full p-2 border"
+        value={endDate}
+        min={date}
+        onChange={(e) => setEndDate(e.target.value)}
       />
       <select
         value={topic}

@@ -60,10 +60,6 @@ export async function POST(req) {
 
     const createdEvent = await googleRes.json();
 
-    console.log('Session:', session);
-    console.log('Creating event with:', { title, description, start, end });
-
-
     return new Response(JSON.stringify({ success: true, event: createdEvent }), {
       status: 200,
     });

@@ -31,7 +31,9 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
           title: event.title,
           description: event.description,
           start: new Date(event.date).toISOString(),
-          end: new Date(new Date(event.date).getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
+          end: event.endDate
+            ? new Date(event.endDate).toISOString()
+            : new Date(new Date(event.date).getTime() + 60 * 60 * 1000).toISOString(), // fallback to 1 hour later
         }),
       });
   
@@ -60,6 +62,7 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
       alert('❌ An unexpected error occurred while adding the event.');
     }
   };
+  
 
   return (
     <div className="border rounded p-4 mb-4 shadow">
@@ -67,12 +70,45 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
       <p className="text-sm text-gray-600 mb-2">{event.location}</p>
       <p className="text-sm text-gray-600 mb-2">{event.description}</p>
       <p className="text-sm text-gray-500 mb-2">
-        Date: {new Date(event.date).toLocaleString('en-US', {
+  {(() => {
+    const start = new Date(event.date);
+    const end = event.endDate ? new Date(event.endDate) : null;
+
+    const sameDay =
+      end &&
+      start.getFullYear() === end.getFullYear() &&
+      start.getMonth() === end.getMonth() &&
+      start.getDate() === end.getDate();
+
+    if (end && sameDay) {
+      return `Date: ${start.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })} | ${start.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })} - ${end.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
+    } else if (end) {
+      return `Starts: ${start.toLocaleString('en-US', {
         dateStyle: 'medium',
         timeStyle: 'short',
-      })
-      }
-      </p>
+      })}\nEnds: ${end.toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })}`;
+    } else {
+      return `Date: ${start.toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })}`;
+    }
+  })()}
+</p>
+
 
       {userEmail && !isAttending && (
         <button

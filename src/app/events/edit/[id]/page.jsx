@@ -11,6 +11,7 @@ export default function EditEventPage() {
     title: '',
     description: '',
     date: '',
+    endDate: '',
     location: '',
     topic: '',
   });
@@ -26,7 +27,8 @@ export default function EditEventPage() {
         setForm({
           title: data.title,
           description: data.description,
-          date: new Date(data.date).toISOString().slice(0, 16), // For datetime-local input
+          date: new Date(data.date).toISOString().slice(0, 16),
+          endDate: data.endDate ? new Date(data.endDate).toISOString().slice(0, 16) : '',
           location: data.location,
           topic: data.topic,
         });
@@ -39,14 +41,46 @@ export default function EditEventPage() {
     fetchEvent();
   }, [id, router]);
   
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  
+    setForm((prev) => {
+      if (name === 'date') {
+        const newStart = value;
+        const currentEnd = prev.endDate;
+  
+        const newStartDate = new Date(newStart);
+        const shouldUpdateEndDate =
+          !currentEnd || new Date(currentEnd) < newStartDate;
+  
+        const oneHourLater = new Date(newStartDate.getTime() + 60 * 60 * 1000)
+          .toISOString()
+          .slice(0, 16); // for datetime-local
+  
+        return {
+          ...prev,
+          date: newStart,
+          endDate: shouldUpdateEndDate ? oneHourLater : currentEnd,
+        };
+      }
+  
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+  const startDate = new Date(form.date);
+  const endDate = new Date(form.endDate);
+
+  if (form.endDate && endDate < startDate) {
+    alert('End date cannot be before start date.');
+    return;
+  }
 
     const res = await fetch(`/api/events/${id}`, {
       method: 'PUT',
@@ -83,11 +117,21 @@ export default function EditEventPage() {
           onChange={handleChange}
           placeholder="Description"
           className="w-full border p-2 rounded"
+          required
         />
         <input
           name="date"
           type="datetime-local"
           value={form.date}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          name="endDate"
+          type="datetime-local"
+          value={form.endDate}
+          min={form.date}
           onChange={handleChange}
           className="w-full border p-2 rounded"
           required

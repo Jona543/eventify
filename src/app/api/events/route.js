@@ -8,9 +8,9 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { title, description, date, location, topic } = body;
+    const { title, description, date, endDate, location, topic } = body;
 
-    if (!title || !description || !date || !location || !topic) {
+    if (!title || !description || !date || !endDate || !location || !topic) {
       return Response.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -22,6 +22,7 @@ export async function POST(request) {
       title,
       description: description || '',
       date: new Date(date),
+      endDate: new Date(endDate),
       location,
       topic,
       createdAt: new Date(),

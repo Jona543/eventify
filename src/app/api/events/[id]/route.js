@@ -1,13 +1,12 @@
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
-export async function PUT(req, context) {
+export async function PUT(req, { params }) {
   try {
-    const params = await context.params
-    const id = params.id
+    const id = params.id; 
     const updatedData = await req.json();
 
-    // Basic validation (optional but useful)
+    // Basic validation
     if (!ObjectId.isValid(id)) {
       return Response.json({ success: false, error: 'Invalid ID format' }, { status: 400 });
     }
@@ -16,14 +15,16 @@ export async function PUT(req, context) {
     const db = client.db();
     const events = db.collection('events');
 
+    // Convert date and endDate to Date objects if present
+    const updateFields = {
+      ...updatedData,
+      ...(updatedData.date && { date: new Date(updatedData.date) }),
+      ...(updatedData.endDate && { endDate: new Date(updatedData.endDate) }),
+    };
+
     const result = await events.updateOne(
       { _id: new ObjectId(id) },
-      {
-        $set: {
-          ...updatedData,
-          date: new Date(updatedData.date), // ensure proper Date object
-        },
-      }
+      { $set: updateFields }
     );
 
     if (result.matchedCount === 0) {
@@ -36,6 +37,7 @@ export async function PUT(req, context) {
     return Response.json({ success: false, error: 'Server error' }, { status: 500 });
   }
 }
+
 
 export async function GET(req, context) {
   const params = await context.params
