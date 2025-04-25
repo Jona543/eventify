@@ -26,7 +26,7 @@ export default function SignInPage() {
   };
 
   const handleGoogleSignIn = () => {
-    signIn('google'); // Automatically redirects to Google's sign-in
+    signIn('google', { callbackUrl: '/' }); // Automatically redirects to Google's sign-in
   };
 
   return (

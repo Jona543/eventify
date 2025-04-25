@@ -11,6 +11,22 @@ export async function POST(req) {
   try {
     const { title, description, start, end } = await req.json();
 
+    const checkUrl = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(start)}&timeMax=${encodeURIComponent(end)}&q=${encodeURIComponent(title)}&singleEvents=true`;
+
+    const checkRes = await fetch(checkUrl, {
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+    });
+
+    const existing = await checkRes.json();
+
+    if (existing.items && existing.items.length > 0) {
+      return new Response(JSON.stringify({ error: 'Event already exists in calendar' }), {
+        status: 409,
+      });
+    }
+
     const googleRes = await fetch(
       'https://www.googleapis.com/calendar/v3/calendars/primary/events',
       {

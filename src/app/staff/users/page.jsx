@@ -28,19 +28,26 @@ export default function AdminUsersPage() {
   if (status === 'loading') return <p>Loading...</p>;
 
   const promoteUser = async (email) => {
-    const res = await fetch('/api/users/promote', {
+    const res = await fetch('/api/staff/promote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
-
+  
     const data = await res.json();
     if (data.success) {
       alert(`Promoted ${email} to staff`);
+      // Update the user's role in state
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.email === email ? { ...user, role: 'staff' } : user
+        )
+      );
     } else {
       alert('Failed to promote user');
     }
   };
+  
 
   if (session?.user?.role !== 'staff') {
     return <p>Unauthorized</p>;

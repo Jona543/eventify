@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import EventCard from '@/app/components/EventCard';
 import { useSession } from 'next-auth/react';
@@ -9,6 +10,7 @@ export default function EventsList() {
   const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState('');
   const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -93,9 +95,6 @@ export default function EventsList() {
   
 
   if (loading) return <p>Loading events...</p>;
-
-  console.log(session?.provider, "provider")
-  console.log(session, 'session')
   
   return (
     <div className="mt-8 max-w-2xl mx-auto">
@@ -125,6 +124,7 @@ export default function EventsList() {
               onUnregister={handleUnregister}
               provider={session?.provider}
               userRole={session?.user?.role}
+              onEdit={(event) => router.push(`/events/edit/${event._id}`)}
             />
           </li>
         ))}

@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
-export default function EventCard({ event, onRegister, onUnregister, userEmail, provider, userRole, }) {
+export default function EventCard({ event, onRegister, onUnregister, userEmail, provider, userRole, onEdit}) {
+
+  const [eventAddedToCalendar, setEventAddedToCalendar] = useState(false);
 
   const isAttending = event.attendees?.includes(userEmail);
 
@@ -40,8 +42,13 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
         data = await res.json();
       }
   
-      if (res.ok) {
-        alert('✅ Event added to your Google Calendar!');
+      if (res.ok || res.status === 409) {
+        setEventAddedToCalendar(true);
+        if (res.status === 409) {
+          alert('⚠️ This event is already in your calendar.');
+        } else {
+          alert('✅ Event added to your Google Calendar!');
+        }
       } else {
         console.error('Google Calendar error:', data);
         alert(
@@ -53,12 +60,11 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
       alert('❌ An unexpected error occurred while adding the event.');
     }
   };
-  
-  
 
   return (
     <div className="border rounded p-4 mb-4 shadow">
       <h2 className="text-lg font-semibold mb-2">{event.title}</h2>
+      <p className="text-sm text-gray-600 mb-2">{event.location}</p>
       <p className="text-sm text-gray-600 mb-2">{event.description}</p>
       <p className="text-sm text-gray-500 mb-2">
         Date: {new Date(event.date).toLocaleString('en-US', {
@@ -86,17 +92,29 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
         </button>        
       )}
       {provider === 'google' ? (
-      <button
-        onClick={handleAddToGoogleCalendar}
-        className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded"
-      >
-        Add to Google Calendar
-      </button>
-      ) : (
-        <p className="text-sm text-gray-600">
-          Sign in with Google to add this event to your calendar.
-        </p>
-      )}
+        eventAddedToCalendar ? (
+      <p className="text-green-600 font-medium">✅ Event already added</p>
+  ) : (
+    <button
+      onClick={handleAddToGoogleCalendar}
+      className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded"
+    >
+      Add to Google Calendar
+    </button>
+  )
+) : (
+  <p className="text-sm text-gray-600">
+    Sign in with Google to add this event to your calendar.
+  </p>
+)}
+{(userRole === 'staff') && onEdit && (
+  <button
+    onClick={() => onEdit(event)}
+    className="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded ml-2"
+  >
+    Edit
+  </button>
+)}
 
       {userRole === 'staff' ? (
         <button
