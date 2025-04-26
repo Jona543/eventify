@@ -108,7 +108,7 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
     }
   })()}
 </p>
-
+<p>Topic: {event.topic}</p>
 
       {userEmail && !isAttending && (
         <button
