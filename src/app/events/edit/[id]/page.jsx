@@ -1,99 +1,103 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 export default function EditEventPage() {
   const { id } = useParams();
   const router = useRouter();
   const [event, setEvent] = useState(null);
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    date: '',
-    endDate: '',
-    location: '',
-    topic: '',
+    title: "",
+    description: "",
+    date: "",
+    endDate: "",
+    location: "",
+    topic: "",
+    featured: false,
   });
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
         const res = await fetch(`/api/events/${id}`);
-        if (!res.ok) throw new Error('Failed to load event');
+        if (!res.ok) throw new Error("Failed to load event");
         const data = await res.json();
-  
+
         setEvent(data);
         setForm({
           title: data.title,
           description: data.description,
           date: new Date(data.date).toISOString().slice(0, 16),
-          endDate: data.endDate ? new Date(data.endDate).toISOString().slice(0, 16) : '',
+          endDate: data.endDate
+            ? new Date(data.endDate).toISOString().slice(0, 16)
+            : "",
           location: data.location,
           topic: data.topic,
+          featured: data.featured ?? false,
         });
       } catch (error) {
         alert(error.message);
-        router.push('/');
+        router.push("/");
       }
     };
-  
+
     fetchEvent();
   }, [id, router]);
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
+
     setForm((prev) => {
-      if (name === 'date') {
+      if (name === "date") {
         const newStart = value;
         const currentEnd = prev.endDate;
-  
+
         const newStartDate = new Date(newStart);
         const shouldUpdateEndDate =
           !currentEnd || new Date(currentEnd) < newStartDate;
-  
+
         const oneHourLater = new Date(newStartDate.getTime() + 60 * 60 * 1000)
           .toISOString()
           .slice(0, 16); // for datetime-local
-  
+
         return {
           ...prev,
           date: newStart,
           endDate: shouldUpdateEndDate ? oneHourLater : currentEnd,
         };
       }
-  
+
       return {
         ...prev,
         [name]: value,
       };
     });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-  const startDate = new Date(form.date);
-  const endDate = new Date(form.endDate);
+    const startDate = new Date(form.date);
+    const endDate = new Date(form.endDate);
 
-  if (form.endDate && endDate < startDate) {
-    alert('End date cannot be before start date.');
-    return;
-  }
+    if (form.endDate && endDate < startDate) {
+      alert("End date cannot be before start date.");
+      return;
+    }
 
     const res = await fetch(`/api/events/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
 
     const data = await res.json();
     if (data.success) {
-      alert('✅ Event updated successfully');
-      router.push('/'); // or the event detail page
+      alert("✅ Event updated successfully");
+      router.push("/"); // or the event detail page
     } else {
-      alert('❌ Failed to update event');
+      alert("❌ Failed to update event");
     }
   };
 
@@ -145,21 +149,39 @@ export default function EditEventPage() {
           required
         />
         <select
-  name="topic"
-  value={form.topic}
-  onChange={handleChange}
-  className="w-full border p-2 rounded"
-  required
->
-  <option value="" disabled>Select a topic</option>
-  <option value="Tech">Tech</option>
-  <option value="Sport">Sport</option>
-  <option value="Business">Business</option>
-  <option value="Health">Health</option>
-</select>
+          name="topic"
+          value={form.topic}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="" disabled>
+            Select a topic
+          </option>
+          <option value="Tech">Tech</option>
+          <option value="Sport">Sport</option>
+          <option value="Business">Business</option>
+          <option value="Health">Health</option>
+        </select>
+        <label className="w-full border p-2 rounded">
+          <input
+            name="featured"
+            type="checkbox"
+            checked={form.featured}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                featured: e.target.checked,
+              }))
+            }
+          />
+          <span>Mark as Featured</span>
+        </label>
 
-
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
           Save Changes
         </button>
       </form>

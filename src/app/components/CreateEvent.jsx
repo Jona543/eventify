@@ -9,6 +9,8 @@ export default function CreateEvent({ onCreated }) {
   const [topic, setTopic] = useState('');
   const [location, setLocation] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [featured, setFeatured] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +26,7 @@ export default function CreateEvent({ onCreated }) {
     const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, date, endDate, location, topic }),
+      body: JSON.stringify({ title, description, date, endDate, location, topic, featured }),
     });
   
     if (res.ok) {
@@ -34,6 +36,7 @@ export default function CreateEvent({ onCreated }) {
       setEndDate('');
       setLocation('');
       setTopic('');
+      setFeatured(false)
       setSuccessMessage('✅ Event created successfully!');
       if (onCreated) onCreated();
     } else {
@@ -119,6 +122,15 @@ export default function CreateEvent({ onCreated }) {
         <option value="Business">Business</option>
         <option value="Health">Health</option>
       </select>
+      <label className="flex items-center space-x-2">
+  <input
+    type="checkbox"
+    checked={featured}
+    onChange={(e) => setFeatured(e.target.checked)}
+  />
+  <span>Mark as Featured</span>
+</label>
+
 
       <button type="submit" className="bg-blue-600 text-white p-2 rounded">
         Create Event

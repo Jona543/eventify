@@ -1,4 +1,5 @@
 import EventsList from './components/EventsList';
+import FeaturedEvents from './components/FeaturedEvents';
 
 export default function HomePage() {
   return (
@@ -7,6 +8,7 @@ export default function HomePage() {
       <p className="text-lg mb-8 text-gray-600">Manage events with ease.</p>
       <div className="space-x-4">
         <EventsList />
+        <FeaturedEvents />
       </div>
     </main>
   );
