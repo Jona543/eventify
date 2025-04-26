@@ -34,3 +34,53 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Notes
+
+📄 Eventify Project Summary
+Project Name: Eventify
+Stack: Next.js (App Router), MongoDB (via Mongoose), NextAuth.js for authentication (Credentials + Google Provider)
+
+Key Features:
+
+User authentication (sign in with email/password + Google)
+
+Staff/Admin roles (admin can promote users)
+
+Create, edit, delete events (staff only)
+
+Users can register or unregister for events
+
+Add events to Google Calendar (prevent duplicate adding)
+
+Filtering events by topic
+
+Account page (view email, change password, delete account)
+
+Special Behaviors:
+
+Only staff/admins can access /events/create
+
+Google Calendar integration uses access token via getServerSession
+
+When creating events:
+
+End date defaults to one hour after start date but can be edited manually
+
+Admin dashboard exists to manage users (e.g., promote to staff)
+
+Components:
+
+CreateEvent form
+
+EventCard (displays event info, shows Edit/Delete/Register buttons based on role)
+
+EventsList (lists EventCards)
+
+Authentication Notes:
+
+MongoDBAdapter for NextAuth
+
+Roles are stored inside the JWT
+
+Protected API routes for sensitive actions

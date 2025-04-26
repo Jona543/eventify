@@ -65,7 +65,25 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
   
 
   return (
-    <div className="border rounded p-4 mb-4 shadow">
+    <div className="relative border rounded p-4 mb-4 shadow">
+      {(userRole === 'staff') && (
+      <div className="absolute top-2 right-2 flex gap-2">
+        {onEdit && (
+          <button
+            onClick={() => onEdit(event)}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white py-0.5 px-2 rounded text-xs"
+          >
+            Edit
+          </button>
+        )}
+        <button
+          onClick={handleDelete}
+          className="bg-gray-700 hover:bg-gray-800 text-white py-0.5 px-2 rounded text-xs"
+        >
+          Delete
+        </button>
+      </div>
+    )}
       <h2 className="text-lg font-semibold mb-2">{event.title}</h2>
       <p className="text-sm text-gray-600 mb-2">{event.location}</p>
       <p className="text-sm text-gray-600 mb-2">{event.description}</p>
@@ -143,23 +161,9 @@ export default function EventCard({ event, onRegister, onUnregister, userEmail, 
     Sign in with Google to add this event to your calendar.
   </p>
 )}
-{(userRole === 'staff') && onEdit && (
-  <button
-    onClick={() => onEdit(event)}
-    className="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded ml-2"
-  >
-    Edit
-  </button>
-)}
 
-      {userRole === 'staff' ? (
-        <button
-          onClick={handleDelete}
-          className="bg-gray-700 hover:bg-gray-800 text-white py-1 px-3 rounded mt-2"
-        >
-          Delete Event
-        </button>
-      ) : null}
+
+      
     </div>
   );
 }
