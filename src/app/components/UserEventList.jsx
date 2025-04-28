@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import EventCard from '@/app/components/EventCard';
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import EventCard from "@/app/components/EventCard";
 
 export default function UserEventList() {
   const { data: session, status } = useSession();
@@ -11,47 +11,53 @@ export default function UserEventList() {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const res = await fetch('/api/users/events');
+      const res = await fetch("/api/users/events");
       const data = await res.json();
       setEvents(data);
       setLoading(false);
     };
 
-    if (status === 'authenticated') {
+    if (status === "authenticated") {
       fetchEvents();
     }
   }, [status]);
 
   const handleRegister = async (eventId) => {
-    const res = await fetch('/api/events/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/events/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventId }),
     });
 
     if (res.ok) {
-      const updated = await fetch('/api/users/events');
+      const updated = await fetch("/api/users/events");
       setEvents(await updated.json());
     }
   };
 
   const handleUnregister = async (eventId) => {
-    const res = await fetch('/api/events/unregister', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    setEvents((prevEvents) =>
+      prevEvents.filter((event) => event._id !== eventId)
+    );
+    const res = await fetch("/api/events/unregister", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventId }),
     });
-  
-    if (res.ok) {
-      const updated = await fetch('/api/users/events');
+
+    if (!res.ok) {
+      alert("Failed to unregister. Please try again.");
+      // Optionally re-fetch events to restore correct state
+      const updated = await fetch("/api/users/events");
       setEvents(await updated.json());
     }
   };
-  
 
-  if (status === 'loading' || loading) return <p>Loading your events...</p>;
-  if (!session) return <p>You need to sign in to view and register for events.</p>;
-  if (events.length === 0) return <p>You are not registered for any events yet.</p>;
+  if (status === "loading" || loading) return <p>Loading your events...</p>;
+  if (!session)
+    return <p>You need to sign in to view and register for events.</p>;
+  if (events.length === 0)
+    return <p>You are not registered for any events yet.</p>;
 
   return (
     <div className="mt-8">
