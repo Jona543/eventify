@@ -1,72 +1,107 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function AdminUsersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [users, setUsers] = useState([]);
+  const [error, setError] = useState("");
+  const [promoting, setPromoting] = useState("");
 
+  // Redirect unauthorized users
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role !== "staff") {
+      router.push("/");
+    }
+  }, [status, session, router]);
+
+  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await fetch('/api/users');
-      const data = await res.json();
-      setUsers(data.users);
+      try {
+        const res = await fetch("/api/users");
+        const data = await res.json();
+        setUsers(data.users);
+      } catch (err) {
+        setError("Failed to load users");
+      }
     };
-
     fetchUsers();
   }, []);
 
-  useEffect(() => {
-    if (status === 'authenticated' && session.user.role !== 'staff') {
-      router.push('/');
-    }
-  }, [session, status, router]);
-
-  if (status === 'loading') return <p>Loading...</p>;
-
   const promoteUser = async (email) => {
-    const res = await fetch('/api/staff/promote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-  
-    const data = await res.json();
-    if (data.success) {
-      alert(`Promoted ${email} to staff`);
-      // Update the user's role in state
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.email === email ? { ...user, role: 'staff' } : user
-        )
-      );
-    } else {
-      alert('Failed to promote user');
+    setPromoting(email);
+    setError("");
+    try {
+      const res = await fetch("/api/staff/promote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.email === email ? { ...user, role: "staff" } : user
+          )
+        );
+      } else {
+        setError("Failed to promote user.");
+      }
+    } catch {
+      setError("Failed to promote user.");
+    } finally {
+      setPromoting("");
     }
   };
-  
 
-  if (session?.user?.role !== 'staff') {
-    return <p>Unauthorized</p>;
+  if (status === "loading") return <p className="p-6">Loading...</p>;
+
+  if (session?.user?.role !== "staff") {
+    return <p className="p-6 text-red-600">Unauthorized</p>;
   }
 
   return (
-    <main className="p-6">
+    <main className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Manage Users</h1>
-      <ul className="space-y-2">
+
+      {error && (
+        <p className="text-red-600 mb-4" role="alert" aria-live="assertive">
+          {error}
+        </p>
+      )}
+
+      <ul className="space-y-4" aria-label="User list">
         {users.map((user) => (
-          <li key={user._id} className="flex justify-between items-center border p-2 rounded">
-            <span>{user.email} ({user.role || 'customer'})</span>
-            {user.role !== 'staff' && (
+          <li
+            key={user._id}
+            className="flex justify-between items-center border p-4 rounded-md shadow-sm bg-white"
+          >
+            <div className="text-sm">
+              <p className="font-medium">{user.email}</p>
+              <p className="text-gray-600 text-xs">{user.role || "customer"}</p>
+            </div>
+
+            {user.role !== "staff" ? (
               <button
                 onClick={() => promoteUser(user.email)}
-                className="bg-blue-600 text-white px-3 py-1 rounded"
+                disabled={promoting === user.email}
+                className={`px-3 py-1 rounded-md text-white text-sm ${
+                  promoting === user.email
+                    ? "bg-blue-300 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
               >
-                Promote to Staff
+                {promoting === user.email ? "Promoting..." : "Promote to Staff"}
               </button>
+            ) : (
+              <span className="text-green-600 text-sm font-semibold">
+                Staff
+              </span>
             )}
           </li>
         ))}

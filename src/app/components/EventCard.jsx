@@ -13,7 +13,7 @@ export default function EventCard({
 }) {
   const [eventAddedToCalendar, setEventAddedToCalendar] = useState(false);
 
-  const isAttending = event.attendees?.includes(userEmail);
+  const isAttending = event.registered;
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this event?")) return;
@@ -75,13 +75,21 @@ export default function EventCard({
   };
 
   return (
-    <div className="relative border rounded p-4 mb-4 shadow">
+    <article
+      className="relative border rounded p-4 pt-8 pb-8 mb-4 shadow flex flex-col"
+      aria-labelledby={`event-${event._id}`}
+    >
+      <h2 id={`event-${event._id}`} className="sr-only">
+        Event: {event.title}
+      </h2>
+
       {userRole === "staff" && (
         <div className="absolute top-2 right-2 flex gap-2">
           {onEdit && (
             <button
               onClick={() => onEdit(event)}
               className="bg-yellow-500 hover:bg-yellow-600 text-white py-0.5 px-2 rounded text-xs"
+              aria-label={`Edit ${event.title} event`}
             >
               Edit
             </button>
@@ -89,88 +97,102 @@ export default function EventCard({
           <button
             onClick={handleDelete}
             className="bg-gray-700 hover:bg-gray-800 text-white py-0.5 px-2 rounded text-xs"
+            aria-label={`Delete ${event.title} event`}
           >
             Delete
           </button>
         </div>
       )}
-      <h2 className="text-lg font-semibold mb-2">{event.title}</h2>
-      <p className="text-sm text-gray-600 mb-2">{event.location}</p>
-      <p className="text-sm text-gray-600 mb-2">{event.description}</p>
-      <p className="text-sm text-gray-500 mb-2">
-        {(() => {
-          const start = new Date(event.date);
-          const end = event.endDate ? new Date(event.endDate) : null;
 
-          const sameDay =
-            end &&
-            start.getFullYear() === end.getFullYear() &&
-            start.getMonth() === end.getMonth() &&
-            start.getDate() === end.getDate();
+      <section>
+        <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
+        <p className="text-sm text-gray-600 mb-2">{event.location}</p>
+        <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+        <p className="text-sm text-gray-500 mb-2">
+          {(() => {
+            const start = new Date(event.date);
+            const end = event.endDate ? new Date(event.endDate) : null;
 
-          if (end && sameDay) {
-            return `Date: ${start.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })} | ${start.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })} - ${end.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}`;
-          } else if (end) {
-            return `Starts: ${start.toLocaleString("en-US", {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}\nEnds: ${end.toLocaleString("en-US", {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}`;
-          } else {
-            return `Date: ${start.toLocaleString("en-US", {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}`;
-          }
-        })()}
-      </p>
-      <p>Topic: {event.topic}</p>
+            const sameDay =
+              end &&
+              start.getFullYear() === end.getFullYear() &&
+              start.getMonth() === end.getMonth() &&
+              start.getDate() === end.getDate();
 
-      {userEmail && !isAttending && (
-        <button
-          onClick={() => onRegister(event._id)}
-          className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded"
-        >
-          Register
-        </button>
-      )}
+            if (end && sameDay) {
+              return `Date: ${start.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })} | ${start.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} - ${end.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}`;
+            } else if (end) {
+              return `Starts: ${start.toLocaleString("en-US", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}\nEnds: ${end.toLocaleString("en-US", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}`;
+            } else {
+              return `Date: ${start.toLocaleString("en-US", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}`;
+            }
+          })()}
+        </p>
+        <p className="mb-2">Topic: {event.topic}</p>
+      </section>
 
-      {userEmail && isAttending && (
-        <button
-          onClick={() => onUnregister(event._id)}
-          className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-        >
-          Unregister
-        </button>
-      )}
-      {provider === "google" ? (
-        eventAddedToCalendar ? (
-          <p className="text-green-600 font-medium">✅ Event already added</p>
-        ) : (
+      <div className="absolute bottom-2 right-2 flex gap-2">
+        {userEmail && !isAttending && (
+          <button
+            onClick={() => onRegister(event._id)}
+            className="bg-blue-500 hover:bg-blue-600 text-white py-0.5 px-2 rounded text-sm"
+            aria-label={`Register for ${event.title}`}
+          >
+            Register
+          </button>
+        )}
+
+        {userEmail && isAttending && (
+          <button
+            onClick={() => onUnregister(event._id)}
+            className="bg-red-500 hover:bg-red-600 text-white py-0.5 px-2 rounded text-sm"
+            aria-label={`Unregister from ${event.title}`}
+          >
+            Unregister
+          </button>
+        )}
+
+        {provider === "google" && !eventAddedToCalendar && (
           <button
             onClick={handleAddToGoogleCalendar}
-            className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded"
+            className="bg-green-500 hover:bg-green-600 text-white py-0.5 px-2 rounded text-sm"
+            aria-label={`Add ${event.title} to Google Calendar`}
           >
             Add to Google Calendar
           </button>
-        )
-      ) : (
-        <p className="text-sm text-gray-600">
+        )}
+      </div>
+
+      {provider === "google" && eventAddedToCalendar && (
+        <p className="text-green-600 font-medium mt-2" aria-live="polite">
+          ✅ Event already added
+        </p>
+      )}
+
+      {!provider && (
+        <p className="text-sm text-gray-600 mt-2" aria-live="polite">
           Sign in with Google to add this event to your calendar.
         </p>
       )}
-    </div>
+    </article>
   );
 }

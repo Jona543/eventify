@@ -59,7 +59,7 @@ export default function EditEventPage() {
 
         const oneHourLater = new Date(newStartDate.getTime() + 60 * 60 * 1000)
           .toISOString()
-          .slice(0, 16); // for datetime-local
+          .slice(0, 16);
 
         return {
           ...prev,
@@ -95,92 +95,136 @@ export default function EditEventPage() {
     const data = await res.json();
     if (data.success) {
       alert("✅ Event updated successfully");
-      router.push("/"); // or the event detail page
+      router.push("/");
     } else {
       alert("❌ Failed to update event");
     }
   };
 
-  if (!event) return <p>Loading event...</p>;
+  if (!event)
+    return (
+      <p role="status" aria-live="polite" className="p-6">
+        Loading event...
+      </p>
+    );
 
   return (
-    <main className="max-w-xl mx-auto p-6">
+    <main role="main" className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Edit Event</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Title"
-          className="w-full border p-2 rounded"
-          required
-        />
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          name="date"
-          type="datetime-local"
-          value={form.date}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          name="endDate"
-          type="datetime-local"
-          value={form.endDate}
-          min={form.date}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          name="location"
-          value={form.location}
-          onChange={handleChange}
-          placeholder="Location"
-          className="w-full border p-2 rounded"
-          required
-        />
-        <select
-          name="topic"
-          value={form.topic}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="" disabled>
-            Select a topic
-          </option>
-          <option value="Tech">Tech</option>
-          <option value="Sport">Sport</option>
-          <option value="Business">Business</option>
-          <option value="Health">Health</option>
-        </select>
-        <label className="w-full border p-2 rounded">
+        <div>
+          <label htmlFor="title" className="block font-medium mb-1">
+            Title
+          </label>
           <input
+            id="title"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block font-medium mb-1">
+            Description
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="date" className="block font-medium mb-1">
+            Start Date & Time
+          </label>
+          <input
+            id="date"
+            name="date"
+            type="datetime-local"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="endDate" className="block font-medium mb-1">
+            End Date & Time
+          </label>
+          <input
+            id="endDate"
+            name="endDate"
+            type="datetime-local"
+            value={form.endDate}
+            min={form.date}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="location" className="block font-medium mb-1">
+            Location
+          </label>
+          <input
+            id="location"
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="topic" className="block font-medium mb-1">
+            Topic
+          </label>
+          <select
+            id="topic"
+            name="topic"
+            value={form.topic}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          >
+            <option value="" disabled>
+              Select a topic
+            </option>
+            <option value="Tech">Tech</option>
+            <option value="Sport">Sport</option>
+            <option value="Business">Business</option>
+            <option value="Health">Health</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            id="featured"
             name="featured"
             type="checkbox"
             checked={form.featured}
             onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                featured: e.target.checked,
-              }))
+              setForm((prev) => ({ ...prev, featured: e.target.checked }))
             }
           />
-          <span>Mark as Featured</span>
-        </label>
+          <label htmlFor="featured" className="text-sm">
+            Mark as Featured
+          </label>
+        </div>
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         >
           Save Changes
         </button>

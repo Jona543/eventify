@@ -13,7 +13,7 @@ export default function UserEventList() {
     const fetchEvents = async () => {
       const res = await fetch("/api/users/events");
       const data = await res.json();
-      setEvents(data);
+      setEvents(data.map((event) => ({ ...event, registered: true })));
       setLoading(false);
     };
 
@@ -31,7 +31,8 @@ export default function UserEventList() {
 
     if (res.ok) {
       const updated = await fetch("/api/users/events");
-      setEvents(await updated.json());
+      const data = await updated.json();
+      setEvents(data.map((event) => ({ ...event, registered: true })));
     }
   };
 
@@ -39,6 +40,7 @@ export default function UserEventList() {
     setEvents((prevEvents) =>
       prevEvents.filter((event) => event._id !== eventId)
     );
+
     const res = await fetch("/api/events/unregister", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,24 +49,44 @@ export default function UserEventList() {
 
     if (!res.ok) {
       alert("Failed to unregister. Please try again.");
-      // Optionally re-fetch events to restore correct state
       const updated = await fetch("/api/users/events");
-      setEvents(await updated.json());
+      const data = await updated.json();
+      setEvents(data.map((event) => ({ ...event, registered: true })));
     }
   };
 
-  if (status === "loading" || loading) return <p>Loading your events...</p>;
-  if (!session)
-    return <p>You need to sign in to view and register for events.</p>;
-  if (events.length === 0)
-    return <p>You are not registered for any events yet.</p>;
+  if (status === "loading" || loading) {
+    return (
+      <p role="status" aria-live="polite">
+        Loading your events...
+      </p>
+    );
+  }
+
+  if (!session) {
+    return (
+      <p role="status" aria-live="polite">
+        You need to sign in to view and register for events.
+      </p>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <p role="status" aria-live="polite">
+        You are not registered for any events yet.
+      </p>
+    );
+  }
 
   return (
-    <div className="mt-8">
-      <h2 className="text-lg font-semibold mb-3">Your Events</h2>
+    <section aria-labelledby="user-events-heading" className="mt-8">
+      <h2 id="user-events-heading" className="text-lg font-semibold mb-3">
+        Your Events
+      </h2>
       <ul className="space-y-2">
         {events.map((event) => (
-          <li key={event._id}>
+          <li key={event._id} aria-labelledby={`event-${event._id}`}>
             <EventCard
               event={event}
               userEmail={session?.user?.email}
@@ -75,6 +97,6 @@ export default function UserEventList() {
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }
