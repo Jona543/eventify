@@ -106,9 +106,9 @@ export default function EventCard({
 
       <section>
         <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-        <p className="text-sm text-gray-600 mb-2">{event.location}</p>
-        <p className="text-sm text-gray-600 mb-2">{event.description}</p>
-        <p className="text-sm text-gray-500 mb-2">
+        <p className="text-sm text-gray-800 mb-2">{event.location}</p>
+        <p className="text-sm text-gray-800 mb-2">{event.description}</p>
+        <p className="text-sm text-gray-700 mb-2">
           {(() => {
             const start = new Date(event.date);
             const end = event.endDate ? new Date(event.endDate) : null;

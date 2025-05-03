@@ -80,7 +80,10 @@ export default function UserEventList() {
   }
 
   return (
-    <section aria-labelledby="user-events-heading" className="mt-8">
+    <section
+      aria-labelledby="user-events-heading"
+      className="mt-8 p-6 max-w-3xl mx-auto bg-white"
+    >
       <h2 id="user-events-heading" className="text-lg font-semibold mb-3">
         Your Events
       </h2>
