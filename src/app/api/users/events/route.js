@@ -1,5 +1,5 @@
 // /api/user/events/route.js
-import { auth } from '@/src/auth'; // Import the auth function
+import { auth } from '@/auth'; // Import the auth function
 import clientPromise from '@/lib/mongodb';
 
 export async function GET() {

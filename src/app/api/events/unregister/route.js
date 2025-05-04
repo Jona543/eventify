@@ -1,6 +1,5 @@
 // /api/events/unregister/route.js
-import { getServerSession } from 'next-auth';
-import { auth } from '@/src/auth';
+import { auth } from '@/auth';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
