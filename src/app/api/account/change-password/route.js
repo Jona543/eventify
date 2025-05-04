@@ -1,13 +1,10 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { auth } from '@/auth'; // ⬅️ A wrapper you will create next
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
-  console.log('🔐 Session:', session);
-
+  const session = await auth();
 
   if (!session) {
     return new Response(JSON.stringify({ error: 'Not authenticated' }), {
