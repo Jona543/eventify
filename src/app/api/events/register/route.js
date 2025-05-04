@@ -1,11 +1,10 @@
 // /api/events/register/route.js
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
+import { auth } from '@/src/auth';  // Import the auth function from src/auth
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();  // Use the auth function to get the session
   if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });
 
   const { eventId } = await req.json();

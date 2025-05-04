@@ -1,9 +1,7 @@
 // app/api/events/route.js
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
-
+import { auth } from '@/src/auth'; // Import the auth function
 
 export async function POST(request) {
   try {
@@ -50,10 +48,9 @@ export async function GET(request) {
     const query = topic ? { topic } : {};
 
     const events = await eventsCollection
-  .find(query)
-  .sort({ date: 1 }) // Sorts events by date ascending
-  .toArray();
-
+      .find(query)
+      .sort({ date: 1 }) // Sorts events by date ascending
+      .toArray();
 
     return Response.json({ success: true, events });
   } catch (error) {
@@ -64,10 +61,10 @@ export async function GET(request) {
 
 export async function DELETE(request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();  // Use the auth function to get the session
 
     if (!session || session.user.role !== 'staff') {
-    return Response.json({ success: false, error: 'Unauthorized' }, { status: 403 });
+      return Response.json({ success: false, error: 'Unauthorized' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);

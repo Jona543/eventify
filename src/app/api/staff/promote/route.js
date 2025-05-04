@@ -1,9 +1,9 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
+// /api/events/promote/route.js
+import { auth } from '@/src/auth'; // Import the auth function
 import clientPromise from '@/lib/mongodb';
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();  // Use the auth function to get the session
 
   // Check if requester is authenticated and an admin
   if (!session || session.user.role !== 'staff') {

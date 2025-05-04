@@ -1,8 +1,8 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
+// /api/events/register/route.js
+import { auth } from '@/src/auth'; // Import the auth function
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();  // Use the auth function to get the session
 
   if (!session || session.provider !== 'google') {
     return new Response(JSON.stringify({ error: 'Not authorized' }), { status: 401 });
