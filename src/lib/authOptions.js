@@ -6,40 +6,30 @@ import clientPromise from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
 export async function getAuthOptions() {
-  // Await client connection directly here
   const client = await clientPromise;
 
-  return {
+  const options = {
     adapter: MongoDBAdapter(client),
     providers: [
       CredentialsProvider({
         name: 'Credentials',
         credentials: { email: {}, password: {} },
         async authorize(credentials) {
-          try {
-            const db = client.db();
-            const users = db.collection('users');
-            const user = await users.findOne({ email: credentials.email });
-        
-            if (!user) return null;
-            
-            if (!user.passwordHash) return null;
+          const db = client.db();
+          const users = db.collection('users');
+          const user = await users.findOne({ email: credentials.email });
 
-            const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-            if (!isValid) return null;
-        
-            return {
-              id: user._id.toString(),
-              name: user.name,
-              email: user.email,
-              role: user.role,
-            };
-          } catch (error) {
-            console.error('Authorize error:', error);
-            return null;
-          }
-        }
-        
+          if (!user) throw new Error('No user found');
+          const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+          if (!isValid) throw new Error('Invalid password');
+
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        },
       }),
       GoogleProvider({
         clientId: process.env.GOOGLE_CLIENT_ID,
@@ -79,4 +69,8 @@ export async function getAuthOptions() {
     },
     secret: process.env.NEXTAUTH_SECRET,
   };
+
+  console.log('NextAuth options:', options);  // Debugging log to check what's being returned
+  return options;
 }
+
