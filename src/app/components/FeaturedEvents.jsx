@@ -42,10 +42,9 @@ export default function FeaturedEvents() {
       }
     };
 
-    if (status === "authenticated") {
-      fetchFeatured();
-    }
-  }, [status]);
+    // Fetch featured events irrespective of login status
+    fetchFeatured();
+  }, [status, session?.user?.email]); // Re-run when session changes
 
   const handleRegister = async (eventId) => {
     try {
@@ -111,6 +110,12 @@ export default function FeaturedEvents() {
       <h2 id="featured-events-heading" className="text-2xl font-bold mb-4">
         🌟 Featured Events
       </h2>
+      {/* Login message for non-logged-in users */}
+      {!session && (
+        <p className="mt-4 text-center text-gray-600">
+          Log in to register for events.
+        </p>
+      )}
       <ul className="space-y-4">
         {featuredEvents.map((event) => (
           <li key={event._id} aria-labelledby={`event-${event._id}`}>
@@ -121,7 +126,7 @@ export default function FeaturedEvents() {
                 session?.user?.email?.endsWith("@gmail.com") ? "google" : null
               }
               userRole={session?.user?.role}
-              onRegister={handleRegister}
+              onRegister={session ? handleRegister : null} // Disable register button if not logged in
               onUnregister={handleUnregister}
               onEdit={() => router.push(`/events/edit/${event._id}`)}
             />

@@ -18,13 +18,21 @@ export default function EventsList() {
       const url = selectedTopic
         ? `/api/events?topic=${encodeURIComponent(selectedTopic)}`
         : "/api/events";
-      const res = await fetch(url);
-      const data = await res.json();
 
-      let allEvents = Array.isArray(data) ? data : data.events || [];
+      // Prepare fetch requests, second one conditional on session
+      const fetches = [fetch(url)];
 
       if (session?.user?.email) {
-        const userRes = await fetch("/api/users/events");
+        fetches.push(fetch("/api/users/events"));
+      }
+
+      const [res, userRes] = await Promise.all(fetches);
+
+      const data = await res.json();
+      let allEvents = Array.isArray(data) ? data : data.events || [];
+
+      // Only process user event data if fetched
+      if (session?.user?.email && userRes) {
         const userEvents = await userRes.json();
         const registeredIds = new Set(userEvents.map((e) => e._id));
 
@@ -45,8 +53,8 @@ export default function EventsList() {
   };
 
   useEffect(() => {
-    if (session) fetchEvents();
-  }, [selectedTopic]);
+    fetchEvents();
+  }, [selectedTopic, session]);
 
   // Handle registration/unregistration without refetching events
   const handleRegister = async (eventId) => {
@@ -119,6 +127,12 @@ export default function EventsList() {
           </select>
         </div>
       </div>
+      {/* Login message for non-logged-in users */}
+      {!session && (
+        <p className="mt-4 text-center text-gray-600">
+          Log in to register for events.
+        </p>
+      )}
 
       {/* Error message display */}
       {error && (
@@ -127,19 +141,16 @@ export default function EventsList() {
         </p>
       )}
 
-      <ul className="space-y-4">
-        {events.length === 0 ? (
-          <li>
-            <p role="status" aria-live="polite">
-              No events available at the moment.
-            </p>
-          </li>
-        ) : (
-          events.map((event) => (
+      {/* If no events are available */}
+      {events.length === 0 ? (
+        <p>No events available at the moment.</p>
+      ) : (
+        <ul className="space-y-4">
+          {events.map((event) => (
             <li key={event._id} aria-labelledby={`event-${event._id}`}>
               <EventCard
                 event={event}
-                onRegister={handleRegister}
+                onRegister={session ? handleRegister : null} // Disable register button if not logged in
                 userEmail={session?.user?.email}
                 onUnregister={handleUnregister}
                 provider={
@@ -149,9 +160,9 @@ export default function EventsList() {
                 onEdit={(event) => router.push(`/events/edit/${event._id}`)}
               />
             </li>
-          ))
-        )}
-      </ul>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
