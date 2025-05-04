@@ -22,7 +22,9 @@ export async function getAuthOptions() {
             const user = await users.findOne({ email: credentials.email });
         
             if (!user) return null;
-        
+            
+            if (!user.passwordHash) return null;
+
             const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
             if (!isValid) return null;
         
