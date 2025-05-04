@@ -1,5 +1,5 @@
 // /api/events/register/route.js
-import { auth } from '@/auth';  // Import the auth function from src/auth
+import { auth } from '@/lib/authHelper';  // Import the auth function from src/auth
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 

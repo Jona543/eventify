@@ -1,5 +1,5 @@
 // /api/events/register/route.js
-import { auth } from '@/auth'; // Import the auth function
+import { auth } from '@/lib/authHelper'; // Import the auth function
 
 export async function POST(req) {
   const session = await auth();  // Use the auth function to get the session

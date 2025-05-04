@@ -1,5 +1,5 @@
 // /api/events/promote/route.js
-import { auth } from '@/auth'; // Import the auth function
+import { auth } from '@/lib/authHelper'; // Import the auth function
 import clientPromise from '@/lib/mongodb';
 
 export async function POST(req) {

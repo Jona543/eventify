@@ -1,9 +1,14 @@
-import { auth } from '@/auth'; // ⬅️ A wrapper you will create next
+import { auth } from '@/lib/authHelper'; // ⬅️ A wrapper you will create next
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
+console.log('[route.js] auth is', auth);
+console.log('[route.js] typeof auth', typeof auth);
+
 export async function POST(req) {
+  console.log("auth is", auth); // See if it's undefined
+
   const session = await auth();
 
   if (!session) {

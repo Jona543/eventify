@@ -1,5 +1,5 @@
 // /api/events/unregister/route.js
-import { auth } from '@/auth';
+import { auth } from '@/lib/authHelper';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 

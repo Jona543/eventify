@@ -1,7 +1,7 @@
 // app/api/events/route.js
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { auth } from '@/auth'; // Import the auth function
+import { auth } from '@/lib/authHelper'; // Import the auth function
 
 export async function POST(request) {
   try {

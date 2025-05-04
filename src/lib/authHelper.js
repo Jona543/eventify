@@ -1,7 +1,9 @@
-// src/auth.js
+// src/lib/authHelper.js
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { getAuthOptions } from '@/lib/authOptions';
 
 export async function auth() {
+  const authOptions = await getAuthOptions();
   return await getServerSession(authOptions);
 }
+
