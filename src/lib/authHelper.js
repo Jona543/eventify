@@ -6,5 +6,5 @@ console.log("[authHelper] typeof authOptions:", typeof authOptions); // should b
 console.log("[authHelper] authOptions keys:", Object.keys(authOptions)); // should list 'providers', 'callbacks', etc.
 
 export async function auth() {
-  return await getServerSession(authOptions);
+  return await getServerSession(req, { ...authOptions });
 }

@@ -6,7 +6,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
 export async function POST(req) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(req, { ...authOptions });
 
   if (!session) {
     return new Response(JSON.stringify({ error: 'Not authenticated' }), {
