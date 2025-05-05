@@ -3,6 +3,7 @@ import { getAuthOptions } from "@/lib/authOptions";
 
 const handler = async (req, res) => {
   const authOptions = await getAuthOptions();
+  console.log("Initializing auth with options");
   return NextAuth(authOptions)(req, res);
 };
 
