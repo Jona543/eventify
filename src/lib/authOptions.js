@@ -14,18 +14,25 @@ export const authOptions = {
         const client = await clientPromise;
         const db = client.db();
         const user = await db.collection("users").findOne({ email: credentials.email });
-
-        if (!user || !(await bcrypt.compare(credentials.password, user.passwordHash))) {
+      
+        // Check if user exists and has a passwordHash (i.e., not a Google-only account)
+        if (!user || !user.passwordHash) {
+          throw new Error("This account does not support password login");
+        }
+      
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!isPasswordValid) {
           throw new Error("Invalid email or password");
         }
-
+      
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
           role: user.role,
         };
-      },
+      }
+      
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -70,5 +77,5 @@ export const authOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
+  debug: true,
 };
