@@ -68,6 +68,7 @@ export async function getAuthOptions() {
       },
     },
     secret: process.env.NEXTAUTH_SECRET,
+    debug: true,
   };
 
   console.log('NextAuth options:', options);  // Debugging log to check what's being returned
