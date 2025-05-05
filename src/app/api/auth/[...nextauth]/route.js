@@ -1,16 +1,30 @@
 import NextAuth from "next-auth";
 import { getAuthOptions } from "@/lib/authOptions";
 
-const handler = async (req, res) => {
-  const authOptions = await getAuthOptions();
-  console.log("Initializing auth with options");
-  return NextAuth(authOptions)(req, res);
-};
-
-const authHandler = async (...args) => {
+export async function GET(request) {
   const options = await getAuthOptions();
-  return NextAuth(options)(...args);
-};
+  return NextAuth(options).handlers.GET(request);
+}
 
-export const GET = authHandler;
-export const POST = authHandler;
+export async function POST(request) {
+  const options = await getAuthOptions();
+  return NextAuth(options).handlers.POST(request);
+}
+
+
+// import NextAuth from "next-auth";
+// import { getAuthOptions } from "@/lib/authOptions";
+
+// const handler = async (req, res) => {
+//   const authOptions = await getAuthOptions();
+//   console.log("Initializing auth with options");
+//   return NextAuth(authOptions)(req, res);
+// };
+
+// const authHandler = async (...args) => {
+//   const options = await getAuthOptions();
+//   return NextAuth(options)(...args);
+// };
+
+// export const GET = authHandler;
+// export const POST = authHandler;
