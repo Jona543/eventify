@@ -61,6 +61,7 @@ export async function getAuthOptions() {
     },
     callbacks: {
       async jwt({ token, user, account }) {
+        console.log('JWT Callback:', { token, user, account });
         if (account) {
           token.accessToken = account.access_token;
           token.provider = account.provider;
@@ -72,11 +73,15 @@ export async function getAuthOptions() {
         return token;
       },
       async session({ session, token }) {
+        console.log('Session Callback:', { session, token });
+        if (!token) {
+          throw new Error("Token is missing");
+        }
         session.accessToken = token.accessToken ?? null;
         session.provider = token.provider ?? null;
         session.user.sub = token.sub ?? null;
         session.user.role = token.role ?? null;
-        session.user.id = token.sub ?? null; // Optional: direct access to ID
+        session.user.id = token.sub ?? null;
         return session;
       },
     },
