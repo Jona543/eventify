@@ -1,37 +1,7 @@
-import NextAuth from 'next-auth';
-import { getAuthOptions } from '@/lib/authOptions';
+// app/api/auth/[...nextauth]/route.js
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
-export async function GET(req) {
-  try {
-    const options = await getAuthOptions();
-    const response = await NextAuth(req, options);
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('NextAuth error:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-}
+const handler = NextAuth(authOptions);
 
-export async function POST(req) {
-  try {
-    const options = await getAuthOptions();
-    const response = await NextAuth(req, options);
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('NextAuth error:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-}
-
+export { handler as GET, handler as POST };

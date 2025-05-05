@@ -1,99 +1,74 @@
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
-import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
-import clientPromise from '@/lib/mongodb';
-import bcrypt from 'bcryptjs';
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
+import clientPromise from "@/lib/mongodb";
+import bcrypt from "bcryptjs";
 
-export async function getAuthOptions() {
-  console.log("getAuthOptions called")
-  // ✅ Fail early if env variables are missing
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.NEXTAUTH_SECRET) {
-    throw new Error('Missing required authentication environment variables');
-  }
+export const authOptions = {
+  adapter: MongoDBAdapter(clientPromise),
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: { email: {}, password: {} },
+      async authorize(credentials) {
+        const client = await clientPromise;
+        const db = client.db();
+        const user = await db.collection("users").findOne({ email: credentials.email });
 
-  const client = await clientPromise;
-
-  return {
-    adapter: MongoDBAdapter(client),
-    providers: [
-      CredentialsProvider({
-        name: 'Credentials',
-        credentials: { email: {}, password: {} },
-        async authorize(credentials) {
-          // ✅ Input validation
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error('Email and password are required');
-          }
-
-          const db = client.db();
-          const users = db.collection('users');
-          const user = await users.findOne({ email: credentials.email });
-
-          if (!user) throw new Error('No user found');
-          const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-          if (!isValid) throw new Error('Invalid password');
-
-          return {
-            id: user._id.toString(),
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          };
-        },
-      }),
-      GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        authorization: {
-          params: {
-            scope: 'openid email profile https://www.googleapis.com/auth/calendar.events',
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      }),
-    ],
-    pages: {
-      signIn: '/signin',
-    },
-    session: {
-      strategy: 'jwt',
-      maxAge: 30 * 24 * 60 * 60, // Optional: 30 days
-    },
-    callbacks: {
-      async jwt({ token, user, account }) {
-        console.log('JWT Callback:', { token, user, account });
-        if (account) {
-          token.accessToken = account.access_token;
-          token.provider = account.provider;
+        if (!user || !(await bcrypt.compare(credentials.password, user.passwordHash))) {
+          throw new Error("Invalid email or password");
         }
-        if (user) {
-          token.sub = user.id;
-          token.role = user.role;
-        }
-        return token;
+
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
       },
-      async session({ session, token }) {
-        try {
-          console.log('Session Callback:', { session, token });
-          if (!token) {
-            throw new Error("Token is missing");
-          }
-          session.accessToken = token.accessToken ?? null;
-          session.provider = token.provider ?? null;
-          session.user.sub = token.sub ?? null;
-          session.user.role = token.role ?? null;
-          session.user.id = token.sub ?? null;
-          return session;
-        } catch (error) {
-          console.error("Session callback failed:", error);
-          throw error;
-        }
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: "openid email profile https://www.googleapis.com/auth/calendar.events",
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
+    }),
+  ],
+  pages: {
+    signIn: "/signin",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  callbacks: {
+    async jwt({ token, user, account }) {
+      if (account) {
+        token.accessToken = account.access_token;
+        token.provider = account.provider;
       }
-      
+      if (user) {
+        token.sub = user.id;
+        token.role = user.role;
+      }
+      return token;
     },
-    secret: process.env.NEXTAUTH_SECRET,
-    debug: process.env.NODE_ENV === 'development',
-  };
-}
-
+    async session({ session, token }) {
+      session.accessToken = token.accessToken ?? null;
+      session.provider = token.provider ?? null;
+      session.user = {
+        ...session.user,
+        id: token.sub ?? null,
+        role: token.role ?? null,
+      };
+      return session;
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
+};
