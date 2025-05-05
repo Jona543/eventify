@@ -1,7 +1,14 @@
-import { auth } from '@/lib/authHelper';
+
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
+
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+
+export async function auth() {
+  return await getServerSession(authOptions);
+}
 
 export async function POST(req) {
   const session = await auth();
