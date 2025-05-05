@@ -4,10 +4,11 @@ import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { getAuthOptions } from '@/lib/authOptions';
 
 export async function auth() {
-  return await getServerSession(authOptions);
+  const options = await getAuthOptions()
+  return await getServerSession(options);
 }
 
 export async function POST(req) {
