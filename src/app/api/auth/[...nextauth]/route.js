@@ -2,7 +2,12 @@
 import NextAuth from 'next-auth';
 import { getAuthOptions } from '@/lib/authOptions';
 
-const authOptionsPromise = getAuthOptions();
-const handler = NextAuth(authOptionsPromise);
+export const GET = async (req) => {
+  const options = await getAuthOptions();
+  return NextAuth(options).GET(req);
+};
 
-export { handler as GET, handler as POST };
+export const POST = async (req) => {
+  const options = await getAuthOptions();
+  return NextAuth(options).POST(req);
+};
