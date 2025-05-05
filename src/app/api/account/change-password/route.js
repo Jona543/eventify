@@ -1,20 +1,24 @@
-import { auth } from '@/lib/authHelper'; // ⬅️ A wrapper you will create next
+import { auth } from '@/lib/authHelper';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
-console.log('[route.js] auth is', auth);
-console.log('[route.js] typeof auth', typeof auth);
-
 export async function POST(req) {
-  console.log("auth is", auth); // See if it's undefined
-
   const session = await auth();
+  console.log('Session:', session);
 
   if (!session) {
     return new Response(JSON.stringify({ error: 'Not authenticated' }), {
       status: 401,
     });
+  }
+
+  // Only allow credentials-based users to change passwords
+  if (session.provider !== 'credentials') {
+    return new Response(
+      JSON.stringify({ error: 'Password change not available for this login method' }),
+      { status: 403 }
+    );
   }
 
   const { oldPassword, newPassword } = await req.json();
@@ -29,12 +33,19 @@ export async function POST(req) {
   const db = client.db();
   const users = db.collection('users');
 
-  const user = await users.findOne({ _id: new ObjectId(session.user.sub) });
+  const user = await users.findOne({ _id: new ObjectId(session.user.id) });
 
   if (!user) {
     return new Response(JSON.stringify({ error: 'User not found' }), {
       status: 404,
     });
+  }
+
+  if (!user.passwordHash) {
+    return new Response(
+      JSON.stringify({ error: 'This account does not support password authentication' }),
+      { status: 400 }
+    );
   }
 
   const isMatch = await bcrypt.compare(oldPassword, user.passwordHash);
@@ -47,7 +58,7 @@ export async function POST(req) {
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
   await users.updateOne(
-    { _id: new ObjectId(session.user.sub) },
+    { _id: new ObjectId(session.user.id) },
     { $set: { passwordHash: hashedNewPassword } }
   );
 
@@ -55,4 +66,3 @@ export async function POST(req) {
     status: 200,
   });
 }
-
