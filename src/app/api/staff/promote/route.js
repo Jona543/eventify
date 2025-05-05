@@ -1,11 +1,10 @@
 // /api/events/promote/route.js
-import { auth } from '@/lib/authHelper'; // Import the auth function
+import { auth } from '@/lib/authHelper'; 
 import clientPromise from '@/lib/mongodb';
 
 export async function POST(req) {
-  const session = await auth();  // Use the auth function to get the session
+  const session = await auth(); 
 
-  // Check if requester is authenticated and an admin
   if (!session || session.user.role !== 'staff') {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 });
   }

@@ -1,19 +1,12 @@
-
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/authOptions';
-
-export async function auth() {
-  const options = await getAuthOptions()
-  return await getServerSession(options);
-}
+import { authOptions } from '@/lib/authOptions';
 
 export async function POST(req) {
-  const session = await auth();
-  console.log('Session:', session);
+  const session = await getServerSession(authOptions);
 
   if (!session) {
     return new Response(JSON.stringify({ error: 'Not authenticated' }), {
@@ -21,7 +14,6 @@ export async function POST(req) {
     });
   }
 
-  // Only allow credentials-based users to change passwords
   if (session.provider !== 'credentials') {
     return new Response(
       JSON.stringify({ error: 'Password change not available for this login method' }),
