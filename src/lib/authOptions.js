@@ -73,17 +73,23 @@ export async function getAuthOptions() {
         return token;
       },
       async session({ session, token }) {
-        console.log('Session Callback:', { session, token });
-        if (!token) {
-          throw new Error("Token is missing");
+        try {
+          console.log('Session Callback:', { session, token });
+          if (!token) {
+            throw new Error("Token is missing");
+          }
+          session.accessToken = token.accessToken ?? null;
+          session.provider = token.provider ?? null;
+          session.user.sub = token.sub ?? null;
+          session.user.role = token.role ?? null;
+          session.user.id = token.sub ?? null;
+          return session;
+        } catch (error) {
+          console.error("Session callback failed:", error);
+          throw error;
         }
-        session.accessToken = token.accessToken ?? null;
-        session.provider = token.provider ?? null;
-        session.user.sub = token.sub ?? null;
-        session.user.role = token.role ?? null;
-        session.user.id = token.sub ?? null;
-        return session;
-      },
+      }
+      
     },
     secret: process.env.NEXTAUTH_SECRET,
     debug: process.env.NODE_ENV === 'development',
