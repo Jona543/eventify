@@ -1,4 +1,3 @@
-// src/lib/authOptions.js
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
@@ -6,15 +5,25 @@ import clientPromise from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
 export async function getAuthOptions() {
+  // ✅ Fail early if env variables are missing
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.NEXTAUTH_SECRET) {
+    throw new Error('Missing required authentication environment variables');
+  }
+
   const client = await clientPromise;
 
-  const options = {
+  return {
     adapter: MongoDBAdapter(client),
     providers: [
       CredentialsProvider({
         name: 'Credentials',
         credentials: { email: {}, password: {} },
         async authorize(credentials) {
+          // ✅ Input validation
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('Email and password are required');
+          }
+
           const db = client.db();
           const users = db.collection('users');
           const user = await users.findOne({ email: credentials.email });
@@ -46,7 +55,10 @@ export async function getAuthOptions() {
     pages: {
       signIn: '/signin',
     },
-    session: { strategy: 'jwt' },
+    session: {
+      strategy: 'jwt',
+      maxAge: 30 * 24 * 60 * 60, // Optional: 30 days
+    },
     callbacks: {
       async jwt({ token, user, account }) {
         if (account) {
@@ -64,14 +76,12 @@ export async function getAuthOptions() {
         session.provider = token.provider ?? null;
         session.user.sub = token.sub ?? null;
         session.user.role = token.role ?? null;
+        session.user.id = token.sub ?? null; // Optional: direct access to ID
         return session;
       },
     },
     secret: process.env.NEXTAUTH_SECRET,
-    debug: true,
+    debug: process.env.NODE_ENV === 'development',
   };
-
-  console.log('NextAuth options:', options);  // Debugging log to check what's being returned
-  return options;
 }
 
