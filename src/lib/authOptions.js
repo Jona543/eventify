@@ -5,6 +5,7 @@ import clientPromise from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
 export async function getAuthOptions() {
+  console.log("getAuthOptions called")
   // ✅ Fail early if env variables are missing
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.NEXTAUTH_SECRET) {
     throw new Error('Missing required authentication environment variables');
