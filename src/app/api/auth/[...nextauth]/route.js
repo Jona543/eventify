@@ -1,15 +1,9 @@
-// app/api/auth/[...nextauth]/route.js
 import NextAuth from 'next-auth';
 import { getAuthOptions } from '@/lib/authOptions';
 
-export const GET = async (req) => {
+const handler = async (req) => {
   const options = await getAuthOptions();
-  const handler = NextAuth(options);
-  return handler(req);
+  return NextAuth(req, options);
 };
 
-export const POST = async (req) => {
-  const options = await getAuthOptions();
-  const handler = NextAuth(options);
-  return handler(req);
-};
+export { handler as GET, handler as POST };
