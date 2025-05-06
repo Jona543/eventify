@@ -18,6 +18,8 @@ export default function EventsList() {
       const url = selectedTopic
         ? `/api/events?topic=${encodeURIComponent(selectedTopic)}`
         : "/api/events";
+      
+      console.log('Fetching events from:', url);
 
       // Prepare fetch requests, second one conditional on session
       const fetches = [fetch(url)];
@@ -31,11 +33,15 @@ export default function EventsList() {
 
       // Parse the main events response
       const data = await res.json();
+      console.log('API Response:', data);
+      
       let allEvents = data.success ? (data.data || []) : [];
+      console.log('Parsed events:', allEvents);
 
       // Process user events if available
       if (session?.user?.email && userRes) {
         const userResponse = await userRes.json();
+        console.log('User events response:', userResponse);
         if (userResponse.success && Array.isArray(userResponse.data)) {
           userEventsData = userResponse.data;
         }

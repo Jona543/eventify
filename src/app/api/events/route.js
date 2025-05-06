@@ -1,18 +1,89 @@
-// Minimal route handler for events
-export async function GET() {
-  return new Response(
-    JSON.stringify({ success: true, data: [] }),
-    { 
-      status: 200, 
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, max-age=0',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      }
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import clientPromise from '@/lib/mongodb';
+
+// Get all events with optional topic filtering
+export async function GET(request) {
+  console.log('GET /api/events called');
+  try {
+    const { searchParams } = new URL(request.url);
+    const topic = searchParams.get('topic');
+    console.log('Topic filter:', topic || 'none');
+    
+    console.log('Connecting to MongoDB...');
+    const client = await clientPromise;
+    console.log('Connected to MongoDB');
+    
+    const db = client.db('eventify');
+    console.log('Using database: eventify');
+    
+    // Build query
+    const query = {};
+    if (topic) {
+      query.topic = topic;
     }
-  );
+    
+    console.log('Fetching events with query:', JSON.stringify(query));
+    
+    // Get events from database
+    const collection = db.collection('events');
+    console.log('Using collection: events');
+    
+    const count = await collection.countDocuments(query);
+    console.log(`Found ${count} events matching the query`);
+    
+    const events = await collection
+      .find(query)
+      .sort({ date: 1 }) // Sort by date ascending
+      .toArray();
+    
+    console.log(`Retrieved ${events.length} events from database`);
+    
+    // Convert _id to string for serialization
+    const serializedEvents = events.map(event => {
+      try {
+        return {
+          ...event,
+          _id: event._id.toString(),
+          date: event.date?.toISOString(),
+          createdAt: event.createdAt?.toISOString(),
+          updatedAt: event.updatedAt?.toISOString(),
+        };
+      } catch (error) {
+        console.error('Error serializing event:', error, 'Event data:', event);
+        return null;
+      }
+    }).filter(Boolean);
+    
+    console.log(`Successfully serialized ${serializedEvents.length} events`);
+    
+    return NextResponse.json(
+      { success: true, data: serializedEvents },
+      { 
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error in GET /api/events:', error);
+    if (error.stack) {
+      console.error('Error stack:', error.stack);
+    }
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to fetch events',
+        message: error.message,
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST() {

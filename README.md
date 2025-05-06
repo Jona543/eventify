@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 # Eventify
 
 ## Getting Started
@@ -20,7 +18,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Please log in using one of the following profiles:
+
+Standard Customer: test1@test.com / password: testing
+Standard Admin: admin@admin.com / password: testing
+Google Customer: eventify44@gmail.com / password: eventify7813
 
 ## Deployed on Vercel
 

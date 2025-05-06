@@ -1,7 +1,6 @@
-import { getServerSession } from 'next-auth/next';
+import { getToken } from 'next-auth/jwt';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
-import { authOptions } from '@/lib/authOptions';
 
 const getResponseHeaders = () => ({
   'Content-Type': 'application/json',
@@ -26,10 +25,10 @@ const createObjectId = (id) => {
  */
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions);
+    const token = await getToken({ req: request });
     
     // Validate authentication
-    if (!session?.user?.email) {
+    if (!token?.email) {
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -93,7 +92,7 @@ export async function POST(request) {
       }
 
       // Check if user is registered
-      if (!event.attendees || !event.attendees.includes(session.user.email)) {
+      if (!event.attendees || !event.attendees.includes(token.email)) {
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -109,7 +108,7 @@ export async function POST(request) {
         { _id: eventObjectId },
         { 
           $pull: { 
-            attendees: session.user.email 
+            attendees: token.email 
           },
           $set: {
             updatedAt: new Date()

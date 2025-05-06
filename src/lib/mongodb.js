@@ -6,8 +6,9 @@ if (!process.env.MONGODB_URI) {
 
 const uri = process.env.MONGODB_URI;
 const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  // These options are no longer needed in MongoDB Node.js Driver v4+
+  // useNewUrlParser: true,
+  // useUnifiedTopology: true,
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
