@@ -1,39 +1,187 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';  // Ensure this is set up correctly
-import clientPromise from '@/lib/mongodb';
+import { getServerSession } from 'next-auth/next';
 import { ObjectId } from 'mongodb';
+import clientPromise from '@/lib/mongodb';
+import { authOptions } from '@/lib/authOptions';
 
-export async function POST(req, res) {
-  // Get session data using next-auth
-  const session = await getServerSession(authOptions);
+const getResponseHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Cache-Control': 'no-store, max-age=0'
+});
 
-  if (!session) {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-
-  const { eventId } = await req.json();
-
-  if (!eventId) {
-    return res.status(400).json({ error: 'Missing event ID' });
-  }
-
-  const client = await clientPromise;
-  const db = client.db();
-
-  // Remove the user email from the event attendees list
+// Helper function to safely create ObjectId
+const createObjectId = (id) => {
   try {
-    const result = await db.collection('events').updateOne(
-      { _id: new ObjectId(eventId) },
-      { $pull: { attendees: session.user.email } }
-    );
+    return id instanceof ObjectId ? id : new ObjectId(id);
+  } catch (error) {
+    console.error('Invalid ObjectId:', error);
+    return null;
+  }
+};
 
-    if (result.modifiedCount === 0) {
-      return res.status(404).json({ error: 'Event not found or user not registered' });
+/**
+ * Unregister a user from an event
+ * @route POST /api/events/unregister
+ * @body {string} eventId - The ID of the event to unregister from
+ * @returns {Promise<Response>} JSON response with success status and message
+ */
+export async function POST(request) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    // Validate authentication
+    if (!session?.user?.email) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Authentication required' 
+        }),
+        { status: 401, headers: getResponseHeaders() }
+      );
     }
 
-    return res.status(200).json({ success: true });
+    try {
+      // Parse and validate request body
+      const body = await request.json();
+      const { eventId } = body || {};
+
+      // Validate event ID
+      if (!eventId) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Event ID is required' 
+          }),
+          { status: 400, headers: getResponseHeaders() }
+        );
+      }
+
+      // Convert to ObjectId safely
+      const eventObjectId = createObjectId(eventId);
+      if (!eventObjectId) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Invalid event ID format' 
+          }),
+          { status: 400, headers: getResponseHeaders() }
+        );
+      }
+
+      // Initialize database connection
+      const client = await clientPromise;
+      if (!client) {
+        throw new Error('Failed to connect to database');
+      }
+
+      const db = client.db();
+      const eventsCollection = db.collection('events');
+
+      // First check if the event exists
+      const event = await eventsCollection.findOne({
+        _id: eventObjectId
+      });
+
+      if (!event) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Event not found',
+            code: 'EVENT_NOT_FOUND'
+          }),
+          { status: 404, headers: getResponseHeaders() }
+        );
+      }
+
+      // Check if user is registered
+      if (!event.attendees || !event.attendees.includes(session.user.email)) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Not registered for this event',
+            code: 'NOT_REGISTERED'
+          }),
+          { status: 400, headers: getResponseHeaders() }
+        );
+      }
+
+      // Update the event by removing the user email from the attendees array
+      const result = await eventsCollection.updateOne(
+        { _id: eventObjectId },
+        { 
+          $pull: { 
+            attendees: session.user.email 
+          },
+          $set: {
+            updatedAt: new Date()
+          }
+        }
+      );
+
+      if (result.matchedCount === 0) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Event not found',
+            code: 'EVENT_NOT_FOUND'
+          }),
+          { status: 404, headers: getResponseHeaders() }
+        );
+      }
+
+      if (result.modifiedCount === 0) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Failed to unregister from event',
+            code: 'UNREGISTRATION_FAILED',
+            ...(process.env.NODE_ENV === 'development' && {
+              debug: 'No changes made to the document'
+            })
+          }),
+          { status: 500, headers: getResponseHeaders() }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Successfully unregistered from event',
+          eventId: eventId,
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          status: 200, 
+          headers: getResponseHeaders() 
+        }
+      );
+    } catch (error) {
+      console.error('Event unregistration error:', error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Failed to process unregistration',
+          code: 'UNREGISTRATION_ERROR',
+          ...(process.env.NODE_ENV === 'development' && {
+            debug: error.message,
+            stack: error.stack
+          })
+        }),
+        { status: 500, headers: getResponseHeaders() }
+      );
+    }
   } catch (error) {
-    console.error('Error unregistering user:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Authentication error:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Authentication check failed',
+        code: 'AUTH_ERROR',
+        ...(process.env.NODE_ENV === 'development' && {
+          debug: error.message,
+          stack: error.stack
+        })
+      }),
+      { status: 500, headers: getResponseHeaders() }
+    );
   }
 }

@@ -21,16 +21,9 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-  if (path === '/debug-token') {
-    return new NextResponse(JSON.stringify(token), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/staff/:path*', '/events/create', '/debug-token'],
+  matcher: ['/staff/:path*', '/events/create'],
 };

@@ -1,17 +1,29 @@
-// /api/user/events/route.js
-import { auth } from '@/lib/authHelper'; // Import the auth function
-import clientPromise from '@/lib/mongodb';
-
+// Minimal route handler for testing
 export async function GET() {
-  const session = await auth(); // Use the auth function to get the session
-  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });
+  return new Response(
+    JSON.stringify({ success: true, data: [] }),
+    { 
+      status: 200, 
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, max-age=0',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      }
+    }
+  );
+}
 
-  const client = await clientPromise;
-  const db = client.db();
-
-  const events = await db.collection('events')
-    .find({ attendees: session.user.email })
-    .toArray();
-
-  return new Response(JSON.stringify(events), { status: 200 });
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, max-age=0'
+    }
+  });
 }

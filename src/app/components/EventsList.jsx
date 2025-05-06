@@ -21,6 +21,7 @@ export default function EventsList() {
 
       // Prepare fetch requests, second one conditional on session
       const fetches = [fetch(url)];
+      let userEventsData = [];
 
       if (session?.user?.email) {
         fetches.push(fetch("/api/users/events"));
@@ -28,19 +29,26 @@ export default function EventsList() {
 
       const [res, userRes] = await Promise.all(fetches);
 
+      // Parse the main events response
       const data = await res.json();
-      let allEvents = Array.isArray(data) ? data : data.events || [];
+      let allEvents = data.success ? (data.data || []) : [];
 
-      // Only process user event data if fetched
+      // Process user events if available
       if (session?.user?.email && userRes) {
-        const userEvents = await userRes.json();
-        const registeredIds = new Set(userEvents.map((e) => e._id));
-
-        allEvents = allEvents.map((event) => ({
-          ...event,
-          registered: registeredIds.has(event._id),
-        }));
+        const userResponse = await userRes.json();
+        if (userResponse.success && Array.isArray(userResponse.data)) {
+          userEventsData = userResponse.data;
+        }
       }
+
+      // Create a set of event IDs the user has registered for
+      const registeredIds = new Set(userEventsData.map((e) => e._id));
+
+      // Merge the registration status into the events
+      allEvents = allEvents.map((event) => ({
+        ...event,
+        registered: registeredIds.has(event._id),
+      }));
 
       setEvents(allEvents);
     } catch (error) {

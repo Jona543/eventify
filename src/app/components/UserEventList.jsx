@@ -11,47 +11,93 @@ export default function UserEventList() {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const res = await fetch("/api/users/events");
-      const data = await res.json();
-      setEvents(data.map((event) => ({ ...event, registered: true })));
-      setLoading(false);
+      try {
+        const res = await fetch("/api/users/events");
+        if (!res.ok) {
+          throw new Error('Failed to fetch user events');
+        }
+        const response = await res.json();
+        if (response.success && Array.isArray(response.data)) {
+          setEvents(response.data.map((event) => ({ ...event, registered: true })));
+        } else {
+          console.error('Unexpected response format:', response);
+          setEvents([]);
+        }
+      } catch (error) {
+        console.error('Error fetching user events:', error);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     if (status === "authenticated") {
       fetchEvents();
+    } else {
+      setLoading(false);
     }
   }, [status]);
 
   const handleRegister = async (eventId) => {
-    const res = await fetch("/api/events/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId }),
-    });
+    try {
+      const res = await fetch("/api/events/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId }),
+      });
 
-    if (res.ok) {
-      const updated = await fetch("/api/users/events");
-      const data = await updated.json();
-      setEvents(data.map((event) => ({ ...event, registered: true })));
+      if (res.ok) {
+        const updated = await fetch("/api/users/events");
+        const response = await updated.json();
+        if (response.success && Array.isArray(response.data)) {
+          setEvents(response.data.map((event) => ({ ...event, registered: true })));
+        }
+      } else {
+        const error = await res.json();
+        console.error('Registration failed:', error);
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
     }
   };
 
   const handleUnregister = async (eventId) => {
+    // Optimistic update
     setEvents((prevEvents) =>
       prevEvents.filter((event) => event._id !== eventId)
     );
 
-    const res = await fetch("/api/events/unregister", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId }),
-    });
+    try {
+      const res = await fetch("/api/events/unregister", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId }),
+      });
 
-    if (!res.ok) {
-      alert("Failed to unregister. Please try again.");
-      const updated = await fetch("/api/users/events");
-      const data = await updated.json();
-      setEvents(data.map((event) => ({ ...event, registered: true })));
+      if (!res.ok) {
+        // Revert optimistic update on error
+        const error = await res.json();
+        console.error('Unregistration failed:', error);
+        
+        // Refetch events to get the correct state
+        const updated = await fetch("/api/users/events");
+        const response = await updated.json();
+        if (response.success && Array.isArray(response.data)) {
+          setEvents(response.data.map((event) => ({ ...event, registered: true })));
+        }
+      }
+    } catch (error) {
+      console.error('Error during unregistration:', error);
+      // Refetch events on error
+      try {
+        const updated = await fetch("/api/users/events");
+        const response = await updated.json();
+        if (response.success && Array.isArray(response.data)) {
+          setEvents(response.data.map((event) => ({ ...event, registered: true })));
+        }
+      } catch (fetchError) {
+        console.error('Error refetching events:', fetchError);
+      }
     }
   };
 
