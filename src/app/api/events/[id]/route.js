@@ -6,7 +6,6 @@ export async function PUT(req, { params }) {
     const id = params.id; 
     const updatedData = await req.json();
 
-    // Basic validation
     if (!ObjectId.isValid(id)) {
       return Response.json({ success: false, error: 'Invalid ID format' }, { status: 400 });
     }
@@ -15,7 +14,6 @@ export async function PUT(req, { params }) {
     const db = client.db();
     const events = db.collection('events');
 
-    // Convert date and endDate to Date objects if present
     const updateFields = {
       ...updatedData,
       ...(updatedData.date && { date: new Date(updatedData.date) }),

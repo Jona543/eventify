@@ -1,5 +1,4 @@
 import { MongoClient } from 'mongodb';
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -15,7 +14,6 @@ async function initDB() {
     await client.connect();
     const db = client.db('eventify');
 
-    // Create collections if they don't exist
     const collections = await db.listCollections().toArray();
     const collectionNames = collections.map(c => c.name);
 
@@ -34,7 +32,6 @@ async function initDB() {
       console.log('Created sessions collection');
     }
 
-    // Create test user if not exists
     const testUser = {
       email: 'eventify44@gmail.com',
       name: 'Eventify',

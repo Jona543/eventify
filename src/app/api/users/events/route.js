@@ -13,7 +13,6 @@ export async function GET(request) {
   try {
     const token = await getToken({ req: request });
     
-    // Validate authentication
     if (!token?.email) {
       return new Response(
         JSON.stringify({ 
@@ -25,7 +24,6 @@ export async function GET(request) {
     }
 
     try {
-      // Initialize database connection
       const client = await clientPromise;
       if (!client) {
         throw new Error('Failed to connect to database');
@@ -34,7 +32,6 @@ export async function GET(request) {
       const db = client.db();
       const eventsCollection = db.collection('events');
 
-      // Find events where the user is an attendee
       const events = await eventsCollection
         .find({
           attendees: token.email
@@ -42,7 +39,6 @@ export async function GET(request) {
         .sort({ date: 1 })
         .toArray();
 
-      // Convert ObjectId to string for serialization
       const serializedEvents = events.map(event => ({
         ...event,
         _id: event._id.toString()

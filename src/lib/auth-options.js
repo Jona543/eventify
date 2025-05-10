@@ -1,11 +1,9 @@
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
 import clientPromise from './mongodb';
-import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 
-// Create a new MongoDB adapter instance
 const mongoAdapter = MongoDBAdapter(clientPromise, {
   databaseName: 'eventify'
 });

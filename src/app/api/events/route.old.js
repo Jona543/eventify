@@ -10,12 +10,10 @@ const getResponseHeaders = () => ({
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 });
 
-// Handler for POST /api/events
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
     
-    // Validate authentication
     if (!session?.user?.email) {
       return new Response(
         JSON.stringify({ 
@@ -27,7 +25,6 @@ export async function POST(request) {
     }
 
     try {
-      // Parse and validate request body
       const body = await request.json();
       const { 
         title, 
@@ -39,7 +36,6 @@ export async function POST(request) {
         featured = false 
       } = body;
 
-      // Check for required fields
       const missingFields = [];
       if (!title) missingFields.push('title');
       if (!date) missingFields.push('date');
@@ -58,12 +54,10 @@ export async function POST(request) {
         );
       }
 
-      // Initialize database connection
       const client = await mongodb;
       const db = client.db();
       const events = db.collection('events');
 
-      // Insert the new event
       const result = await events.insertOne({
         title: title.trim(),
         description: description.trim(),
@@ -117,21 +111,17 @@ export async function POST(request) {
   }
 }
 
-// Handler for GET /api/events
 export async function GET(request) {
   try {
-    // Initialize database connection
     const db = await mongodb;
     const eventsCollection = db.collection('events');
 
-    // Parse query parameters
     const { searchParams } = new URL(request.url);
     const topic = searchParams.get('topic');
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '100', 10);
     const skip = parseInt(searchParams.get('skip') || '0', 10);
 
-    // Build query object
     const query = {};
     
     if (topic) {
@@ -142,18 +132,15 @@ export async function GET(request) {
       query.status = status.toLowerCase();
     }
 
-    // Get total count for pagination
     const total = await eventsCollection.countDocuments(query);
     
-    // Fetch events with pagination and sorting
     let events = await eventsCollection
       .find(query)
       .sort({ date: 1, createdAt: -1 })
       .skip(skip)
-      .limit(Math.min(limit, 100)) // Cap at 100 items per page
+      .limit(Math.min(limit, 100)) 
       .toArray();
     
-    // Serialize the event documents
     events = events.map(event => serializeDoc(event));
 
     return new Response(
@@ -185,12 +172,10 @@ export async function GET(request) {
   }
 }
 
-// Handler for DELETE /api/events
 export async function DELETE(request) {
   try {
     const session = await getServerSession(authOptions);
     
-    // Validate authentication
     if (!session?.user?.email) {
       return new Response(
         JSON.stringify({ 
@@ -202,7 +187,6 @@ export async function DELETE(request) {
     }
 
     try {
-      // Parse request body
       const { eventId } = await request.json();
       
       if (!eventId) {
@@ -215,15 +199,12 @@ export async function DELETE(request) {
         );
       }
 
-      // Initialize database connection
       const client = await mongodb;
       const db = client.db();
       const events = db.collection('events');
 
-      // Convert to ObjectId safely
       const eventObjectId = toObjectId(eventId);
 
-      // Check if event exists and user is the creator
       const event = await events.findOne({ _id: eventObjectId });
       
       if (!event) {
@@ -246,7 +227,6 @@ export async function DELETE(request) {
         );
       }
 
-      // Delete the event
       await events.deleteOne({ _id: eventObjectId });
 
       return new Response(
@@ -286,7 +266,6 @@ export async function DELETE(request) {
   }
 }
 
-// Handler for OPTIONS (CORS preflight)
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,

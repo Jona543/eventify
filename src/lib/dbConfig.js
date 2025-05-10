@@ -1,8 +1,3 @@
-/**
- * Database configuration for MongoDB
- * Handles different environments and connection settings
- */
-
 import { MongoClient } from 'mongodb';
 
 if (!process.env.MONGODB_URI) {
@@ -15,11 +10,6 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
- */
 let cached = global.mongo;
 
 if (!cached) {
@@ -63,7 +53,6 @@ export async function connectToDatabase() {
   return cached.conn;
 }
 
-// Export the connection promise for direct use
 export const dbPromise = (async () => {
   try {
     const { db } = await connectToDatabase();

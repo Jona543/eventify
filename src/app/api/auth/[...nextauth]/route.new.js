@@ -1,10 +1,8 @@
 import NextAuth from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
-// Initialize NextAuth with the provided options
 const authHandler = NextAuth(authOptions);
 
-// Export the auth handler for all HTTP methods
 export async function GET(req, res) {
   return await authHandler(req, res);
 }
@@ -34,5 +32,4 @@ export async function OPTIONS() {
   });
 }
 
-// Export the auth handler as default for NextAuth
 export default NextAuth(authOptions);

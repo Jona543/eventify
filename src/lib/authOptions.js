@@ -4,7 +4,6 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 
-// Ensure we have the required environment variables
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET is not set');
 }
@@ -87,7 +86,6 @@ export const authOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
-  // Ensure we're using the latest NextAuth.js configuration
   useSecureCookies: process.env.NODE_ENV === 'production',
   cookies: {
     sessionToken: {

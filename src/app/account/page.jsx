@@ -4,15 +4,14 @@ import { useSession, signOut } from "next-auth/react";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import UserEventList from "@/app/components/UserEventList";
-import AccountSettings from "@/app/components/AccountSettings"; // Import the new AccountSettings component
+import AccountSettings from "@/app/components/AccountSettings";
 
 export default function AccountPage() {
   const { data: session, status } = useSession();
-  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false); // State for handling deletion process
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
   const passwordMessageRef = useRef(null);
@@ -30,11 +29,11 @@ export default function AccountPage() {
 
     const data = await res.json();
     setMessage(data.success ? "Password changed" : data.error);
-    passwordMessageRef.current?.focus(); // Ensure focus is on the message
+    passwordMessageRef.current?.focus();
   };
 
   const handleDeleteAccount = async () => {
-    setIsDeleting(true); // Show loading state for deletion
+    setIsDeleting(true);
     const confirmDelete = window.confirm(
       "Are you sure you want to delete your account? This cannot be undone."
     );

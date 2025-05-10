@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import clientPromise from '@/lib/mongodb';
 
-// Get all events with optional topic filtering
 export async function GET(request) {
   console.log('GET /api/events called');
   try {
@@ -16,8 +14,7 @@ export async function GET(request) {
     
     const db = client.db('eventify');
     console.log('Using database: eventify');
-    
-    // Build query
+
     const query = {};
     if (topic) {
       query.topic = topic;
@@ -25,7 +22,6 @@ export async function GET(request) {
     
     console.log('Fetching events with query:', JSON.stringify(query));
     
-    // Get events from database
     const collection = db.collection('events');
     console.log('Using collection: events');
     
@@ -34,12 +30,11 @@ export async function GET(request) {
     
     const events = await collection
       .find(query)
-      .sort({ date: 1 }) // Sort by date ascending
+      .sort({ date: 1 }) 
       .toArray();
     
     console.log(`Retrieved ${events.length} events from database`);
     
-    // Convert _id to string for serialization
     const serializedEvents = events.map(event => {
       try {
         return {

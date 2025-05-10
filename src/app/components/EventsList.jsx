@@ -9,7 +9,7 @@ export default function EventsList() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState("");
-  const [error, setError] = useState(""); // Error state for user-friendly error handling
+  const [error, setError] = useState("");
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -18,10 +18,9 @@ export default function EventsList() {
       const url = selectedTopic
         ? `/api/events?topic=${encodeURIComponent(selectedTopic)}`
         : "/api/events";
-      
-      console.log('Fetching events from:', url);
 
-      // Prepare fetch requests, second one conditional on session
+      console.log("Fetching events from:", url);
+
       const fetches = [fetch(url)];
       let userEventsData = [];
 
@@ -31,26 +30,22 @@ export default function EventsList() {
 
       const [res, userRes] = await Promise.all(fetches);
 
-      // Parse the main events response
       const data = await res.json();
-      console.log('API Response:', data);
-      
-      let allEvents = data.success ? (data.data || []) : [];
-      console.log('Parsed events:', allEvents);
+      console.log("API Response:", data);
 
-      // Process user events if available
+      let allEvents = data.success ? data.data || [] : [];
+      console.log("Parsed events:", allEvents);
+
       if (session?.user?.email && userRes) {
         const userResponse = await userRes.json();
-        console.log('User events response:', userResponse);
+        console.log("User events response:", userResponse);
         if (userResponse.success && Array.isArray(userResponse.data)) {
           userEventsData = userResponse.data;
         }
       }
 
-      // Create a set of event IDs the user has registered for
       const registeredIds = new Set(userEventsData.map((e) => e._id));
 
-      // Merge the registration status into the events
       allEvents = allEvents.map((event) => ({
         ...event,
         registered: registeredIds.has(event._id),
@@ -70,7 +65,6 @@ export default function EventsList() {
     fetchEvents();
   }, [selectedTopic, session]);
 
-  // Handle registration/unregistration without refetching events
   const handleRegister = async (eventId) => {
     const res = await fetch("/api/events/register", {
       method: "POST",
@@ -81,9 +75,7 @@ export default function EventsList() {
     if (res.ok) {
       setEvents((prevEvents) =>
         prevEvents.map((event) =>
-          event._id === eventId
-            ? { ...event, registered: true } // Optimistically update the event's registration state
-            : event
+          event._id === eventId ? { ...event, registered: true } : event
         )
       );
     } else {
@@ -101,9 +93,7 @@ export default function EventsList() {
     if (res.ok) {
       setEvents((prevEvents) =>
         prevEvents.map((event) =>
-          event._id === eventId
-            ? { ...event, registered: false } // Optimistically update the event's unregistration state
-            : event
+          event._id === eventId ? { ...event, registered: false } : event
         )
       );
     } else {
@@ -164,7 +154,7 @@ export default function EventsList() {
             <li key={event._id} aria-labelledby={`event-${event._id}`}>
               <EventCard
                 event={event}
-                onRegister={session ? handleRegister : null} // Disable register button if not logged in
+                onRegister={session ? handleRegister : null}
                 userEmail={session?.user?.email}
                 onUnregister={handleUnregister}
                 provider={

@@ -1,4 +1,4 @@
-// Minimal route handler for staff promotion
+
 export async function POST() {
   return new Response(
     JSON.stringify({ success: true, message: 'Promote route is working' }),

@@ -1,4 +1,4 @@
-// Minimal route handler for account deletion
+
 export async function DELETE() {
   return new Response(
     JSON.stringify({ success: true, message: 'Account deletion would be processed here' }),

@@ -1,6 +1,3 @@
-// Simple MongoDB utility functions that won't cause build issues
-
-// Mock client promise
 const clientPromise = {
   then: () => ({
     db: () => ({
@@ -16,10 +13,8 @@ const clientPromise = {
   })
 };
 
-// Simple ObjectId mock
 const toObjectId = (id) => id;
 
-// Simple document serializer
 const serializeDoc = (doc) => {
   if (!doc) return null;
   if (Array.isArray(doc)) return doc.map(d => ({

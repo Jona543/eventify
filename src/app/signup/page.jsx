@@ -1,4 +1,3 @@
-// src/app/signup/page.jsx
 "use client";
 
 import Head from "next/head";
@@ -8,7 +7,7 @@ export default function SignUpPage() {
   return (
     <>
       <Head>
-        <title>Create Account | Eventify</title> {/* Page-specific title */}
+        <title>Create Account | Eventify</title>
         <meta
           name="description"
           content="Sign up to Eventify and start managing your events."

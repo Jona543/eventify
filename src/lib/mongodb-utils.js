@@ -1,6 +1,3 @@
-// Simple MongoDB client that creates a new connection each time
-// This is less efficient but more reliable for build process
-
 let cachedClient = null;
 let cachedDb = null;
 
@@ -20,7 +17,6 @@ async function connectToDatabase() {
   
   const db = client.db();
   
-  // Cache the client and db in development to prevent multiple connections
   if (process.env.NODE_ENV === 'development') {
     cachedClient = client;
     cachedDb = db;
@@ -29,10 +25,8 @@ async function connectToDatabase() {
   return { client, db };
 }
 
-// Export the connection function
 export default connectToDatabase;
 
-// Helper function to safely convert to ObjectId
 export function toObjectId(id) {
   if (!id) return null;
   try {
@@ -44,21 +38,17 @@ export function toObjectId(id) {
   }
 }
 
-// Helper function to serialize MongoDB documents
 export function serializeDoc(doc) {
   if (!doc) return null;
-  
-  // Handle arrays
+
   if (Array.isArray(doc)) {
     return doc.map(serializeDoc);
   }
   
-  // Handle dates
   if (doc instanceof Date) {
     return doc.toISOString();
   }
   
-  // Handle MongoDB ObjectId
   if (doc?._id && typeof doc._id === 'object' && doc._id.toString) {
     doc = { ...doc, _id: doc._id.toString() };
   }

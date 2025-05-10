@@ -10,7 +10,6 @@ const getResponseHeaders = () => ({
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 });
 
-// Helper function to safely create ObjectId
 const createObjectId = (id) => {
   try {
     return id instanceof ObjectId ? id : new ObjectId(id);
@@ -24,7 +23,6 @@ export async function POST(request) {
   try {
     const token = await getToken({ req: request });
     
-    // Validate authentication
     if (!token?.email) {
       return new Response(
         JSON.stringify({ 
@@ -36,11 +34,9 @@ export async function POST(request) {
     }
 
     try {
-      // Parse and validate request body
       const body = await request.json();
       const { eventId } = body || {};
 
-      // Validate event ID
       if (!eventId) {
         return new Response(
           JSON.stringify({ 
@@ -51,8 +47,6 @@ export async function POST(request) {
         );
       }
 
-
-      // Convert to ObjectId safely
       const eventObjectId = createObjectId(eventId);
       if (!eventObjectId) {
         return new Response(
@@ -64,7 +58,6 @@ export async function POST(request) {
         );
       }
 
-      // Initialize database connection
       const client = await clientPromise;
       if (!client) {
         throw new Error('Failed to connect to database');
@@ -73,7 +66,6 @@ export async function POST(request) {
       const db = client.db();
       const eventsCollection = db.collection('events');
 
-      // First check if the event exists
       const event = await eventsCollection.findOne({
         _id: eventObjectId
       });
@@ -89,7 +81,6 @@ export async function POST(request) {
         );
       }
 
-      // Check if user is already registered
       if (event.attendees && event.attendees.includes(token.email)) {
         return new Response(
           JSON.stringify({ 
@@ -101,7 +92,6 @@ export async function POST(request) {
         );
       }
 
-      // Update the event by adding the user email to the attendees array
       const result = await eventsCollection.updateOne(
         { _id: eventObjectId },
         { 

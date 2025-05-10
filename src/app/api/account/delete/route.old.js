@@ -9,13 +9,10 @@ const getResponseHeaders = () => ({
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 });
 
-// Main DELETE handler for account deletion
 export async function DELETE() {
   try {
-    // Get the current session
     const session = await getServerSession(authOptions);
     
-    // Check if user is authenticated
     if (!session?.user?.id) {
       return new Response(
         JSON.stringify({ 
@@ -30,7 +27,6 @@ export async function DELETE() {
       );
     }
 
-    // Just return a success response without actually deleting anything
     return new Response(
       JSON.stringify({ 
         success: true, 

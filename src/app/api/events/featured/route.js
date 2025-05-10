@@ -14,7 +14,6 @@ export async function GET() {
 
     const db = client.db();
     
-    // Get featured events that are either upcoming or have no status
     const query = { 
       featured: true,
       $or: [
@@ -30,7 +29,6 @@ export async function GET() {
       .limit(10)
       .toArray();
       
-    // Convert ObjectId to string for serialization
     const serializedEvents = events.map(event => ({
       ...event,
       _id: event._id.toString()
@@ -66,7 +64,6 @@ export async function GET() {
   }
 }
 
-// Add OPTIONS method for CORS preflight requests
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,

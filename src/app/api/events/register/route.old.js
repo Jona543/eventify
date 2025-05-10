@@ -27,7 +27,6 @@ export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
     
-    // Validate authentication
     if (!session?.user?.email) {
       return new Response(
         JSON.stringify({ 
@@ -39,11 +38,9 @@ export async function POST(request) {
     }
 
     try {
-      // Parse and validate request body
       const body = await request.json();
       const { eventId } = body || {};
 
-      // Validate event ID
       if (!eventId) {
         return new Response(
           JSON.stringify({ 
@@ -54,7 +51,6 @@ export async function POST(request) {
         );
       }
 
-      // Convert to ObjectId safely
       const eventObjectId = toObjectId(eventId);
       if (!eventObjectId) {
         return new Response(
@@ -70,13 +66,11 @@ export async function POST(request) {
       const db = client.db();
       const eventsCollection = db.collection('events');
 
-      // First check if the event exists
       const event = await eventsCollection.findOne(
         { _id: eventObjectId },
         { projection: { _id: 1, attendees: 1 } }
       );
       
-      // Serialize the event document
       if (event) {
         event = serializeDoc(event);
       }
@@ -91,7 +85,6 @@ export async function POST(request) {
         );
       }
 
-      // Add user to attendees if not already registered
       if (!event.attendees.includes(session.user.email)) {
         const result = await eventsCollection.updateOne(
           { _id: eventObjectId },

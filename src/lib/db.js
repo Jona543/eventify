@@ -14,19 +14,16 @@ let client;
 let clientPromise;
 
 if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable to preserve the connection
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri, options);
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  // In production mode, don't use a global variable
   client = new MongoClient(uri, options);
   clientPromise = client.connect();
 }
 
-// Helper function to safely convert ObjectId
 export function createObjectId(id) {
   if (!id) return null;
   try {
@@ -39,7 +36,6 @@ export function createObjectId(id) {
   }
 }
 
-// Helper function to serialize document
 export function serializeDocument(doc) {
   if (!doc) return null;
   
@@ -74,7 +70,6 @@ export function serializeDocument(doc) {
   return doc;
 }
 
-// Get database instance
 export async function getDb() {
   const client = await clientPromise;
   return client.db();

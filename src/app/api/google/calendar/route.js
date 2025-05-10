@@ -1,4 +1,4 @@
-// Minimal route handler for Google Calendar
+
 export async function POST() {
   return new Response(
     JSON.stringify({ success: true, message: 'Google Calendar integration' }),

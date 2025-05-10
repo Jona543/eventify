@@ -1,5 +1,4 @@
 const events = [
-    // --- Tech Events ---
     {
       title: "Tech Talk: AI in 2025",
       description: "Exploring the next generation of artificial intelligence applications.",

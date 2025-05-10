@@ -1,4 +1,3 @@
-// app/api/users/route.js
 import clientPromise from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 

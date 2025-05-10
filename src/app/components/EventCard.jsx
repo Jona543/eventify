@@ -23,7 +23,7 @@ export default function EventCard({
     });
     if (res.ok) {
       alert("Event deleted");
-      window.location.reload(); // quick refresh — you could also use state to update
+      window.location.reload();
     } else {
       alert("Failed to delete event");
     }
@@ -42,7 +42,7 @@ export default function EventCard({
             ? new Date(event.endDate).toISOString()
             : new Date(
                 new Date(event.date).getTime() + 60 * 60 * 1000
-              ).toISOString(), // fallback to 1 hour later
+              ).toISOString(),
         }),
       });
 

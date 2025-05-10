@@ -1,4 +1,3 @@
-// src/app/layout.jsx
 "use client";
 
 import "./globals.css";
@@ -16,7 +15,6 @@ export default function RootLayout({ children }) {
           content="Browse and manage events with Eventify."
         />
         <meta charSet="UTF-8" />
-        {/* Add other global meta tags or links here */}
       </head>
       <body>
         <SessionProvider>

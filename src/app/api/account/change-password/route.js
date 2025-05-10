@@ -1,4 +1,4 @@
-// Minimal route handler for testing
+
 export async function POST() {
   return new Response(
     JSON.stringify({ success: true, message: 'Password change would be processed here' }),

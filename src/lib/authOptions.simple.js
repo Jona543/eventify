@@ -1,16 +1,13 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
-// Simple in-memory user store for development
 const users = [];
 
 export const authOptions = {
-  // Use JWT strategy for session management
   session: {
     strategy: "jwt",
   },
   
-  // Configure authentication providers
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -19,7 +16,6 @@ export const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // For development only - always authenticate
         return {
           id: '1',
           name: 'Test User',
@@ -34,12 +30,10 @@ export const authOptions = {
     })
   ],
   
-  // Custom pages
   pages: {
     signIn: "/signin",
   },
   
-  // JWT configuration
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -57,7 +51,6 @@ export const authOptions = {
     }
   },
   
-  // Session settings
   secret: process.env.NEXTAUTH_SECRET || 'your-secret-key',
   debug: process.env.NODE_ENV === 'development'
 };

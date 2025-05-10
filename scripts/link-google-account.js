@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from .env.local
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 if (!process.env.MONGODB_URI) {
@@ -18,8 +17,8 @@ const GOOGLE_ACCOUNT = {
   provider: 'google',
   type: 'oauth',
   providerAccountId: '109714411317049780297',
-  access_token: 'dummy-access-token', // This will be updated on first login
-  expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+  access_token: 'dummy-access-token', 
+  expires_at: Math.floor(Date.now() / 1000) + 3600, 
   scope: 'openid email profile',
   token_type: 'Bearer'
 };
@@ -35,7 +34,6 @@ async function linkGoogleAccount() {
     await client.connect();
     const db = client.db('eventify');
 
-    // Find the user
     const user = await db.collection('users').findOne({ email: 'eventify44@gmail.com' });
     
     if (!user) {
@@ -43,7 +41,6 @@ async function linkGoogleAccount() {
       process.exit(1);
     }
 
-    // Check if account is already linked
     const existingAccount = await db.collection('accounts').findOne({
       provider: 'google',
       providerAccountId: GOOGLE_ACCOUNT.providerAccountId
@@ -54,13 +51,12 @@ async function linkGoogleAccount() {
       process.exit(0);
     }
 
-    // Link the account
     await db.collection('accounts').insertOne({
       ...GOOGLE_ACCOUNT,
       userId: user._id,
-      refresh_token: null, // Will be set on first login
-      access_token: null,  // Will be set on first login
-      id_token: null      // Will be set on first login
+      refresh_token: null, 
+      access_token: null,  
+      id_token: null      
     });
 
     console.log('Successfully linked Google account to user');

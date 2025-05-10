@@ -13,7 +13,6 @@ export async function POST() {
   try {
     const session = await getServerSession(authOptions);
     
-    // Validate authentication
     if (!session?.user?.id) {
       return new Response(
         JSON.stringify({ 
@@ -25,7 +24,6 @@ export async function POST() {
       );
     }
 
-    // Return a simple success response
     return new Response(
       JSON.stringify({ 
         success: true, 

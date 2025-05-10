@@ -23,10 +23,8 @@ export async function GET() {
       );
     }
 
-    // Get database connection
     const { db } = await connectToDatabase();
     
-    // Get events for the current user
     const events = await db.collection('events')
       .find({ 
         attendees: { $elemMatch: { $eq: session.user.email } } 

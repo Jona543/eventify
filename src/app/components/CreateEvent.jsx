@@ -9,7 +9,7 @@ export default function CreateEvent({ onCreated }) {
   const [topic, setTopic] = useState("");
   const [location, setLocation] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); // New state for error messages
+  const [errorMessage, setErrorMessage] = useState("");
   const [featured, setFeatured] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -28,7 +28,7 @@ export default function CreateEvent({ onCreated }) {
       return;
     }
 
-    setErrorMessage(""); // Reset error message on successful validation
+    setErrorMessage("");
 
     const res = await fetch("/api/events", {
       method: "POST",
