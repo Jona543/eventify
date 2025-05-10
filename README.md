@@ -41,7 +41,9 @@ Deployed site link: https://eventify-taupe-alpha.vercel.app
 For testing, please log in using one of the following profiles:
 
 Standard Customer: test1@test.com / password: testing
+
 Standard Admin: admin@admin.com / password: testing
+
 Google Customer: eventify44@gmail.com / password: eventify7813
 
 ## Prerequisites
